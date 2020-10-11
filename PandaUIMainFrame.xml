@@ -1,0 +1,11 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+    <Script file="PandaUI.lua"/>
+
+    <Frame name="PandaUIMainFrame" parent="UIParent">
+        <Scripts>
+            <OnLoad function="PandaUIMainFrame_OnLoad"></OnLoad>
+            <OnEvent function="PandaUIMainFrame_OnEvent"></OnEvent>
+        </Scripts>
+    </Frame>
+</Ui>

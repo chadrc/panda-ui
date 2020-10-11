@@ -1,0 +1,11 @@
+<Bindings>
+    <Binding name="Hide Blizzard UI" category="Panda UI">
+		PandaUICore:HideBlizzardUI();
+    </Binding>
+    <Binding name="Show Blizzard UI" category="Panda UI">
+		PandaUICore:ShowBlizzardUI();
+    </Binding>
+    <Binding name="Toggle Blizzard UI" category="Panda UI">
+		PandaUICore:ToggleBlizzardUI();
+    </Binding>
+</Bindings>

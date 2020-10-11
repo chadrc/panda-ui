@@ -1,0 +1,7 @@
+## Interface: 80300
+## Title: PandaUI
+## Author: YulePanda
+## Version: 0.1
+
+core/PandaUICore.lua
+PandaUIMainFrame.xml
