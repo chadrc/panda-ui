@@ -19,6 +19,8 @@ function PandaUIMainFrame_OnLoad()
     -- PandaUIMainFrame:RegisterEvent("PLAYER_FOCUS_CHANGED");
     -- PandaUIMainFrame:RegisterEvent("PLAYER_TARGET_CHANGED");
 
+    PandaUICore:Initialize();
+
     SlashCmdList["PANDAUI"] = PandaUI_OnSlash;
 end
 

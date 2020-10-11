@@ -1,6 +1,8 @@
-function MakeFrame(type) print("making frame: ", type); end
-
-PandaUICore = {hider = CreateFrame("Frame"), showingBlizzardUI = true};
+PandaUICore = {
+    hider = CreateFrame("Frame"),
+    showingBlizzardUI = true,
+    rootFrame = nil
+};
 
 local framesToHide = {
     PlayerFrame = {},
@@ -50,4 +52,36 @@ function PandaUICore:ToggleBlizzardUI()
     else
         self:ShowBlizzardUI();
     end
+end
+
+function PandaUICore:Initialize()
+    self.rootFrame = CreateFrame("Frame", "PandaUIRootFrame", UIParent)
+    self.rootFrame:SetSize(self.rootFrame:GetParent():GetWidth(),
+                           self.rootFrame:GetParent():GetHeight());
+    self.rootFrame:SetBackdrop({
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        tile = true
+    });
+    self.rootFrame:SetBackdropColor(1, 0, 0, .1);
+    self.rootFrame:SetPoint("CENTER");
+end
+
+function PandaUICore:CreateFrame(name, details)
+    local t = "Frame";
+    local tmp = nil;
+    local p = self.rootFrame;
+    if details then
+        t = details.type or t;
+        p = details.p or p;
+        tmp = details.template or tmp;
+    end
+
+    local n = name;
+    if n then
+        n = p:GetName() .. n;
+    else
+        n = p:GetName() .. "_ChildFrame_" .. tostring(p:GetNumChildren() + 1);
+    end
+
+    return CreateFrame(t, n, p, tmp);
 end
