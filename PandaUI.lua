@@ -8,6 +8,8 @@ function PandaUI_OnSlash(msg)
         PandaUICore:HideBlizzardUI();
     elseif msg == "show_blizz" then
         PandaUICore:ShowBlizzardUI();
+    elseif msg == "toggle" then
+        PandaUICore:ToggleUI();
     else
         print("Unknown PandaUI command: ", msg);
     end

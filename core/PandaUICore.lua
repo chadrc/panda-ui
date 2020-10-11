@@ -14,10 +14,19 @@ local framesToHide = {
     MicroButtonAndBagsBar = {},
     MultiBarRight = {},
     MultiBarLeft = {},
-    QuestFrame = {},
     ObjectiveTrackerFrame = {},
     BuffFrame = {}
 }
+
+function PandaUICore:ToggleUI()
+    if self.showingBlizzardUI then
+        self:HideBlizzardUI();
+        self.rootFrame:Show();
+    else
+        self:ShowBlizzardUI();
+        self.rootFrame:Hide();
+    end
+end
 
 function PandaUICore:HideBlizzardUI(options)
     self.hider:Hide();
@@ -78,13 +87,14 @@ local function ExtractValue(info, parentValue)
     end
 end
 
-function PandaUICore:CreateFrame(name, details)
+function PandaUICore:CreateFrame(name, details, children)
     local t = "Frame";
     local tmp = nil;
     local p = self.rootFrame;
     local width = p:GetWidth();
     local height = p:GetHeight();
     local anchor = PandaUICore:anchor();
+    local d = details or {};
     local n = name;
     if n then
         n = p:GetName() .. n;
@@ -99,24 +109,47 @@ function PandaUICore:CreateFrame(name, details)
     });
     frame:SetBackdropColor(0, 0, 0, 0);
 
-    if details then
-        t = details.type or t;
-        p = details.parent or p;
-        tmp = details.template or tmp;
+    t = d.type or t;
+    p = d.parent or p;
+    tmp = d.template or tmp;
 
-        if details.backgroundColor then
-            local c = details.backgroundColor;
-            frame:SetBackdropColor(c.r, c.g, c.b, c.a);
-        end
-
-        width = ExtractValue(details.width, p:GetWidth()) or p:GetWidth();
-        height = ExtractValue(details.height, p:GetHeight()) or p:GetHeight();
-        anchor = details.anchor or anchor;
+    if d.backgroundColor then
+        local c = d.backgroundColor;
+        frame:SetBackdropColor(c.r, c.g, c.b, c.a);
     end
+
+    width = ExtractValue(d.width, p:GetWidth()) or p:GetWidth();
+    height = ExtractValue(d.height, p:GetHeight()) or p:GetHeight();
+    anchor = d.anchor or anchor;
 
     frame:SetSize(width, height);
     frame:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
                    anchor.offsetY);
+
+    if children then
+        -- cache children for layout after creation
+        local childFrames = {};
+        for _, child in ipairs(children) do
+            child.parent = frame;
+            local childFrame = PandaUICore:CreateFrame(child.name, child);
+            if child.key then frame[child.key] = childFrame; end
+            table.insert(childFrames, childFrame);
+        end
+
+        local layout = d.layout or {};
+
+        if layout.direction == "horizontal" then
+            -- horizontal children have same height as parent
+            -- and share horizontal space evenly
+            local width = frame:GetWidth() / table.getn(childFrames);
+            local height = frame:GetHeight();
+            for i, child in ipairs(childFrames) do
+                child:SetSize(width, height);
+                child:ClearAllPoints();
+                child:SetPoint("BOTTOMLEFT", (i - 1) * width, 0);
+            end
+        end
+    end
 
     return frame;
 end
