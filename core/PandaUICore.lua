@@ -3,26 +3,27 @@ function MakeFrame(type) print("making frame: ", type); end
 PandaUICore = {hider = CreateFrame("Frame"), showingBlizzardUI = true};
 
 local framesToHide = {
-    {name = "PlayerFrame"}, {name = "StatusTrackingBarManager"}, {
-        name = "TargetFrame",
-        shouldShow = function() return UnitName("target") ~= nil; end
-    }, {
-        name = "FocusFrame",
-        shouldShow = function() return UnitName("focus") ~= nil; end
-    }, {name = "MinimapCluster"}, {name = "MainMenuBarArtFrame"},
-    {name = "MicroButtonAndBagsBar"}, {name = "MultiBarRight"},
-    {name = "MultiBarLeft"}, {name = "QuestFrame"},
-    {name = "ObjectiveTrackerFrame"}, {name = "BuffFrame"}
+    PlayerFrame = {},
+    StatusTrackingBarManager = {},
+    TargetFrame = {shouldShow = function() return UnitExists("target"); end},
+    FocusFrame = {shouldShow = function() return UnitExists("focus"); end},
+    MinimapCluster = {},
+    MainMenuBarArtFrame = {},
+    MicroButtonAndBagsBar = {},
+    MultiBarRight = {},
+    MultiBarLeft = {},
+    QuestFrame = {},
+    ObjectiveTrackerFrame = {},
+    BuffFrame = {}
 }
-
-local frameCache = {};
 
 function PandaUICore:HideBlizzardUI(options)
     self.hider:Hide();
 
-    for _, f in ipairs(framesToHide) do
-        table.insert(frameCache, {name = f.name});
-        _G[f.name]:Hide();
+    for name, details in pairs(framesToHide) do
+        details.parent = _G[name]:GetParent();
+        _G[name]:SetParent(self.hider);
+        _G[name]:Hide();
     end
 
     HidePartyFrame();
@@ -31,13 +32,14 @@ function PandaUICore:HideBlizzardUI(options)
 end
 
 function PandaUICore:ShowBlizzardUI(options)
-    print('target name: ', UnitName("target"));
-    print('focus name: ', UnitName("focus"));
-
-    for _, f in ipairs(framesToHide) do
-        print('showing ', f.name);
-        if not f.shouldShow or f.shouldShow() then _G[f.name]:Show(); end
+    for name, details in pairs(framesToHide) do
+        _G[name]:SetParent(details.parent);
+        if not details.shouldShow or details.shouldShow() then
+            _G[name]:Show();
+        end
     end
+
+    ShowPartyFrame();
 
     self.showingBlizzardUI = true;
 end
