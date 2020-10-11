@@ -84,6 +84,7 @@ function PandaUICore:CreateFrame(name, details)
     local p = self.rootFrame;
     local width = p:GetWidth();
     local height = p:GetHeight();
+    local anchor = PandaUICore:anchor();
     local n = name;
     if n then
         n = p:GetName() .. n;
@@ -110,16 +111,26 @@ function PandaUICore:CreateFrame(name, details)
 
         width = ExtractValue(details.width, p:GetWidth()) or p:GetWidth();
         height = ExtractValue(details.height, p:GetHeight()) or p:GetHeight();
+        anchor = details.anchor or anchor;
     end
 
     frame:SetSize(width, height);
-    frame:SetPoint("BOTTOMLEFT");
+    frame:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
+                   anchor.offsetY);
 
     return frame;
 end
 
 -- Convenience Utilities
 
+function PandaUICore:anchor(base, relative, offsetX, offsetY)
+    return {
+        base = base or "BOTTOMLEFT",
+        relative = relative or base or "BOTTOMLEFT",
+        offsetX = offsetX or 0,
+        offsetY = offsetY or 0
+    }
+end
 function PandaUICore:val(v) return {type = "value", value = v}; end
 function PandaUICore:pct(p) return {type = "percentage", value = p}; end
 
