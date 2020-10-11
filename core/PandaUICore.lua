@@ -63,19 +63,27 @@ function PandaUICore:Initialize()
         tile = true
     });
     self.rootFrame:SetBackdropColor(1, 0, 0, .1);
-    self.rootFrame:SetPoint("CENTER");
+    self.rootFrame:SetPoint("BOTTOMLEFT");
+end
+
+-- Private utilites
+
+local function ExtractValue(info, parentValue)
+    if info then
+        if info.type == "percentage" then
+            return parentValue * (info.value / 100);
+        else
+            return info.value
+        end
+    end
 end
 
 function PandaUICore:CreateFrame(name, details)
     local t = "Frame";
     local tmp = nil;
     local p = self.rootFrame;
-    if details then
-        t = details.type or t;
-        p = details.p or p;
-        tmp = details.template or tmp;
-    end
-
+    local width = p:GetWidth();
+    local height = p:GetHeight();
     local n = name;
     if n then
         n = p:GetName() .. n;
@@ -83,5 +91,35 @@ function PandaUICore:CreateFrame(name, details)
         n = p:GetName() .. "_ChildFrame_" .. tostring(p:GetNumChildren() + 1);
     end
 
-    return CreateFrame(t, n, p, tmp);
+    local frame = CreateFrame(t, n, p, tmp);
+    frame:SetBackdrop({
+        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        tile = true
+    });
+    frame:SetBackdropColor(0, 0, 0, 0);
+
+    if details then
+        t = details.type or t;
+        p = details.parent or p;
+        tmp = details.template or tmp;
+
+        if details.backgroundColor then
+            local c = details.backgroundColor;
+            frame:SetBackdropColor(c.r, c.g, c.b, c.a);
+        end
+
+        width = ExtractValue(details.width, p:GetWidth()) or p:GetWidth();
+        height = ExtractValue(details.height, p:GetHeight()) or p:GetHeight();
+    end
+
+    frame:SetSize(width, height);
+    frame:SetPoint("BOTTOMLEFT");
+
+    return frame;
 end
+
+-- Convenience Utilities
+
+function PandaUICore:val(v) return {type = "value", value = v}; end
+function PandaUICore:pct(p) return {type = "percentage", value = p}; end
+

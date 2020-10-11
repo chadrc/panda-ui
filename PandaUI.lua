@@ -20,6 +20,7 @@ function PandaUIMainFrame_OnLoad()
     -- PandaUIMainFrame:RegisterEvent("PLAYER_TARGET_CHANGED");
 
     PandaUICore:Initialize();
+    PandaUIPlayer:Initialize();
 
     SlashCmdList["PANDAUI"] = PandaUI_OnSlash;
 end

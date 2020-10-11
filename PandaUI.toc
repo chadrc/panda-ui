@@ -4,4 +4,5 @@
 ## Version: 0.1
 
 core/PandaUICore.lua
+player/PandaUIPlayer.lua
 PandaUIMainFrame.xml
