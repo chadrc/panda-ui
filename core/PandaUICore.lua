@@ -4,6 +4,9 @@ PandaUICore = {
     rootFrame = nil
 };
 
+-- no-ops to prevent errors
+function PandaUICore.hider:OnStatusBarsUpdated() end
+
 local framesToHide = {
     PlayerFrame = {},
     StatusTrackingBarManager = {},
@@ -84,7 +87,7 @@ function PandaUICore:Initialize()
         bgFile = "Interface/Tooltips/UI-Tooltip-Background",
         tile = true
     });
-    self.rootFrame:SetBackdropColor(1, 0, 0, .1);
+    self.rootFrame:SetBackdropColor(0, 0, 0, 0);
     self.rootFrame:SetPoint("BOTTOMLEFT");
 end
 
@@ -139,28 +142,28 @@ function PandaUICore:CreateFrame(name, details, children)
     frame:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
                    anchor.offsetY);
 
+    local layout = d.layout or {};
     if children then
-        -- cache children for layout after creation
+        -- horizontal children have same height as parent
+        -- and share horizontal space evenly
         local childFrames = {};
-        for _, child in ipairs(children) do
+        local childWidth = frame:GetWidth() / table.getn(children);
+        local childHeight = frame:GetHeight();
+
+        for i, child in ipairs(children) do
             child.parent = frame;
-            local childFrame = PandaUICore:CreateFrame(child.name, child);
+
+            if layout.direction == "horizontal" then
+                child.width = PandaUICore:val(childWidth);
+                child.height = PandaUICore:val(childHeight);
+                child.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
+                                                  (i - 1) * childWidth, 0);
+            end
+
+            local childFrame = PandaUICore:CreateFrame(child.name, child,
+                                                       child.children);
             if child.key then frame[child.key] = childFrame; end
             table.insert(childFrames, childFrame);
-        end
-
-        local layout = d.layout or {};
-
-        if layout.direction == "horizontal" then
-            -- horizontal children have same height as parent
-            -- and share horizontal space evenly
-            local width = frame:GetWidth() / table.getn(childFrames);
-            local height = frame:GetHeight();
-            for i, child in ipairs(childFrames) do
-                child:SetSize(width, height);
-                child:ClearAllPoints();
-                child:SetPoint("BOTTOMLEFT", (i - 1) * width, 0);
-            end
         end
     end
 
