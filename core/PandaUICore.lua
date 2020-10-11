@@ -21,10 +21,22 @@ local framesToHide = {
 function PandaUICore:ToggleUI()
     if self.showingBlizzardUI then
         self:HideBlizzardUI();
-        self.rootFrame:Show();
+        self:ShowPandaUI();
     else
         self:ShowBlizzardUI();
-        self.rootFrame:Hide();
+        self:HidePandaUI();
+    end
+end
+
+function PandaUICore:HidePandaUI() self.rootFrame:Hide(); end
+
+function PandaUICore:ShowPandaUI() self.rootFrame:Show(); end
+
+function PandaUICore:TogglePandaUI()
+    if self.rootFrame:IsShown() then
+        PandaUICore:HidePandaUI();
+    else
+        PandaUICore:ShowPandaUI();
     end
 end
 

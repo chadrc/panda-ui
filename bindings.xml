@@ -1,5 +1,8 @@
 <Bindings>
-    <Binding name="Hide Blizzard UI" category="Panda UI">
+    <Binding name="Swap UI" header="General" category="Panda UI">
+		PandaUICore:ToggleUI();
+    </Binding>
+    <Binding name="Hide Blizzard UI" header="Blizzard UI" category="Panda UI">
 		PandaUICore:HideBlizzardUI();
     </Binding>
     <Binding name="Show Blizzard UI" category="Panda UI">
@@ -7,5 +10,14 @@
     </Binding>
     <Binding name="Toggle Blizzard UI" category="Panda UI">
 		PandaUICore:ToggleBlizzardUI();
+    </Binding>
+    <Binding name="Hide Panda UI" header="Panda UI" category="Panda UI">
+		PandaUICore:HidePandaUI();
+    </Binding>
+    <Binding name="Show Panda UI" category="Panda UI">
+		PandaUICore:ShowPandaUI();
+    </Binding>
+    <Binding name="Toggle Panda UI" category="Panda UI">
+		PandaUICore:TogglePandaUI();
     </Binding>
 </Bindings>

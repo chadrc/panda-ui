@@ -21,6 +21,8 @@ function PandaUIMainFrame_OnLoad()
     -- PandaUIMainFrame:RegisterEvent("PLAYER_FOCUS_CHANGED");
     -- PandaUIMainFrame:RegisterEvent("PLAYER_TARGET_CHANGED");
 
+    PandaUIMainFrame:RegisterEvent("ADDON_LOADED");
+
     PandaUICore:Initialize();
     PandaUIPlayer:Initialize();
 
@@ -28,9 +30,8 @@ function PandaUIMainFrame_OnLoad()
 end
 
 function PandaUIMainFrame_OnEvent(self, event, arg1)
-    -- if event == "PLAYER_FOCUS_CHANGED" then
-
-    -- elseif event == "PLAYER_TARGET_CHANGED" then
-
-    -- end
+    print('event: ', event, arg1);
+    if event == "ADDON_LOADED" and arg1 == "PandaUI" then
+        PandaUICore:HidePandaUI();
+    end
 end
