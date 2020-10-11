@@ -15,7 +15,8 @@ local framesToHide = {
     MultiBarRight = {},
     MultiBarLeft = {},
     ObjectiveTrackerFrame = {},
-    BuffFrame = {}
+    BuffFrame = {},
+    DurabilityFrame = {}
 }
 
 function PandaUICore:ToggleUI()
@@ -49,7 +50,7 @@ function PandaUICore:HideBlizzardUI(options)
         _G[name]:Hide();
     end
 
-    HidePartyFrame();
+    -- HidePartyFrame();
 
     self.showingBlizzardUI = false;
 end
@@ -62,7 +63,7 @@ function PandaUICore:ShowBlizzardUI(options)
         end
     end
 
-    ShowPartyFrame();
+    -- ShowPartyFrame();
 
     self.showingBlizzardUI = true;
 end

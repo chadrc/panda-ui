@@ -30,7 +30,7 @@ function PandaUIMainFrame_OnLoad()
 end
 
 function PandaUIMainFrame_OnEvent(self, event, arg1)
-    print('event: ', event, arg1);
+    -- print('event: ', event, arg1);
     if event == "ADDON_LOADED" and arg1 == "PandaUI" then
         PandaUICore:HidePandaUI();
     end
