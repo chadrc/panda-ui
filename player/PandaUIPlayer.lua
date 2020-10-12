@@ -96,24 +96,23 @@ function PandaUIPlayer:Initialize()
                 }
             }
         }, {
-            name = "PrimaryResource",
+            name = "Power",
+            layout = {direction = "vertical"},
             children = {
                 {
-                    name = "PrimaryPower",
-                    ref = "primaryPower",
-                    backgroundColor = powerInfo.primaryColor,
-                    anchor = PandaUICore:anchor("LEFT"),
+                    name = "SecondaryPower",
+                    backgroundColor = powerInfo.secondaryColor,
+                    anchor = PandaUICore:anchor("TOPLEFT"),
+                    height = PandaUICore:pct(30),
                     events = {
                         UNIT_POWER_FREQUENT = function(self, unit, type)
                             if unit == "player" then
                                 local powerType =
                                     powerEnumFromEnergizeStringLookup[type];
 
-                                if powerType == powerInfo.primary then
-                                    print("primary change: ", type);
-                                    local primaryPowerFrame = self;
+                                if powerType == powerInfo.secondary then
                                     local maxHealthWidth =
-                                        primaryPowerFrame:GetParent():GetWidth();
+                                        self:GetParent():GetWidth();
                                     local maxHealth =
                                         UnitPowerMax(unit, powerType);
                                     local currentHealth =
@@ -122,9 +121,35 @@ function PandaUIPlayer:Initialize()
                                         maxHealthWidth *
                                             (currentHealth / maxHealth);
 
-                                    primaryPowerFrame:SetWidth(newWidth);
-                                elseif powerType == powerInfo.secondary then
-                                    print('secondary change ', type);
+                                    self:SetWidth(newWidth);
+                                end
+                            end
+                        end
+                    }
+                }, {
+                    name = "PrimaryPower",
+                    ref = "primaryPower",
+                    backgroundColor = powerInfo.primaryColor,
+                    anchor = PandaUICore:anchor("BOTTOMLEFT"),
+                    height = PandaUICore:pct(70),
+                    events = {
+                        UNIT_POWER_FREQUENT = function(self, unit, type)
+                            if unit == "player" then
+                                local powerType =
+                                    powerEnumFromEnergizeStringLookup[type];
+
+                                if powerType == powerInfo.primary then
+                                    local maxHealthWidth =
+                                        self:GetParent():GetWidth();
+                                    local maxHealth =
+                                        UnitPowerMax(unit, powerType);
+                                    local currentHealth =
+                                        UnitPower(unit, powerType);
+                                    local newWidth =
+                                        maxHealthWidth *
+                                            (currentHealth / maxHealth);
+
+                                    self:SetWidth(newWidth);
                                 end
                             end
                         end
