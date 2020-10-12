@@ -33,7 +33,22 @@ function PandaUIPlayer:Initialize()
                     name = "CurrentHealth",
                     ref = "playerHealth",
                     backgroundColor = {r = 0, g = 1, b = 0, a = 1},
-                    anchor = PandaUICore:anchor("RIGHT")
+                    anchor = PandaUICore:anchor("RIGHT"),
+                    events = {
+                        UNIT_HEALTH = function(self, unit)
+                            if unit == "player" then
+                                local healthFrame = self;
+                                local maxHealthWidth =
+                                    healthFrame:GetParent():GetWidth();
+                                local maxHealth = UnitHealthMax(unit);
+                                local currentHealth = UnitHealth(unit);
+                                local newWidth =
+                                    maxHealthWidth * (currentHealth / maxHealth);
+
+                                healthFrame:SetWidth(newWidth);
+                            end
+                        end
+                    }
                 }
             }
         }, {
@@ -43,38 +58,29 @@ function PandaUIPlayer:Initialize()
                     name = "PrimaryPower",
                     ref = "primaryPower",
                     backgroundColor = {r = 0, g = 0, b = 1, a = 1},
-                    anchor = PandaUICore:anchor("LEFT")
+                    anchor = PandaUICore:anchor("LEFT"),
+                    events = {
+                        UNIT_POWER_FREQUENT = function(self, unit, type)
+                            if unit == "player" then
+                                print("power change: ", type);
+                                local primaryPowerFrame = self;
+                                local maxHealthWidth =
+                                    primaryPowerFrame:GetParent():GetWidth();
+                                local powerType =
+                                    powerEnumFromEnergizeStringLookup[type];
+                                local maxHealth = UnitPowerMax(unit, powerType);
+                                local currentHealth = UnitPower(unit, powerType);
+                                local newWidth =
+                                    maxHealthWidth * (currentHealth / maxHealth);
+
+                                primaryPowerFrame:SetWidth(newWidth);
+                            end
+                        end
+                    }
                 }
             }
         }
     });
 
     for k, v in pairs(self.root.refs.playerHealth) do print(k, ' - ', v); end
-
-    return {
-        UNIT_HEALTH = function(unit)
-            if unit == "player" then
-                local healthFrame = self.root.refs.playerHealth;
-                local maxHealthWidth = healthFrame:GetParent():GetWidth();
-                local maxHealth = UnitHealthMax(unit);
-                local currentHealth = UnitHealth(unit);
-                local newWidth = maxHealthWidth * (currentHealth / maxHealth);
-
-                healthFrame:SetWidth(newWidth);
-            end
-        end,
-        UNIT_POWER_FREQUENT = function(unit, type)
-            if unit == "player" then
-                print("power change: ", type);
-                local primaryPowerFrame = self.root.refs.primaryPower;
-                local maxHealthWidth = primaryPowerFrame:GetParent():GetWidth();
-                local powerType = powerEnumFromEnergizeStringLookup[type];
-                local maxHealth = UnitPowerMax(unit, powerType);
-                local currentHealth = UnitPower(unit, powerType);
-                local newWidth = maxHealthWidth * (currentHealth / maxHealth);
-
-                primaryPowerFrame:SetWidth(newWidth);
-            end
-        end
-    }
 end

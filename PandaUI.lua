@@ -17,18 +17,6 @@ end
 
 local eventHandlers = {};
 
-local function RegisterHandlers(list)
-    if not list then return end
-
-    for name, handler in pairs(list) do
-        if eventHandlers[name] then
-            table.insert(eventHandlers[name], handler);
-        else
-            eventHandlers[name] = {handler};
-        end
-    end
-end
-
 function PandaUIMainFrame_OnLoad()
     print("Panda UI Load");
 
@@ -37,8 +25,8 @@ function PandaUIMainFrame_OnLoad()
 
     PandaUIMainFrame:RegisterEvent("ADDON_LOADED");
 
-    RegisterHandlers(PandaUICore:Initialize());
-    RegisterHandlers(PandaUIPlayer:Initialize());
+    PandaUICore:Initialize();
+    PandaUIPlayer:Initialize();
 
     for event, _ in pairs(eventHandlers) do
         PandaUIMainFrame:RegisterEvent(event, "player")
@@ -49,12 +37,8 @@ end
 
 function PandaUIMainFrame_OnEvent(self, event, ...)
     -- print('event: ', event, arg1);
-    local arg1 = ...;
-    if event == "ADDON_LOADED" and arg1 == "PandaUI" then
+    local name = ...;
+    if event == "ADDON_LOADED" and name == "PandaUI" then
         PandaUICore:HidePandaUI();
-    end
-
-    if eventHandlers[event] then
-        for _, handler in ipairs(eventHandlers[event]) do handler(...) end
     end
 end

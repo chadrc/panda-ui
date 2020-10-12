@@ -164,6 +164,20 @@ function PandaUICore:CreateFrame(name, details, children)
         end
     end
 
+    local eventCount = 0;
+    for name, _ in pairs(d.events or {}) do
+        frame:RegisterEvent(name);
+        eventCount = eventCount + 1;
+    end
+
+    if eventCount > 0 then
+        frame:SetScript("OnEvent", function(self, event, ...)
+            if self.events[event] then self.events[event](self, ...); end
+        end)
+    end
+
+    frame.events = d.events;
+
     return frame;
 end
 
