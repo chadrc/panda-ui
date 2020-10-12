@@ -132,8 +132,8 @@ function PandaUICore:CreateFrame(name, details, children)
         frame:SetBackdropColor(c.r, c.g, c.b, c.a);
     end
 
-    width = ExtractValue(d.width, p:GetWidth()) or p:GetWidth();
-    height = ExtractValue(d.height, p:GetHeight()) or p:GetHeight();
+    width = ExtractValue(d.width, width) or width;
+    height = ExtractValue(d.height, height) or height;
     anchor = d.anchor or anchor;
 
     frame:SetSize(width, height);
@@ -142,17 +142,14 @@ function PandaUICore:CreateFrame(name, details, children)
 
     local childLayout = d.childLayout or {};
     if children then
-        -- horizontal children have same height as parent
-        -- and share horizontal space evenly
-        local childWidth = frame:GetWidth() / table.getn(children);
-        local childHeight = frame:GetHeight();
-
         for i, child in ipairs(children) do
             child.parent = frame;
 
             if childLayout.direction == "horizontal" then
+                -- horizontal children have same height as parent
+                -- and share horizontal space evenly
+                local childWidth = frame:GetWidth() / table.getn(children);
                 child.width = PandaUICore:val(childWidth);
-                child.height = PandaUICore:val(childHeight);
                 child.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
                                                   (i - 1) * childWidth, 0);
             end

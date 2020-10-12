@@ -68,7 +68,7 @@ function PandaUIPlayer:Initialize()
 
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
-        childLayout = {direction = "horizontal"}
+        childLayout = {direction = "horizontal", sizing = "fill"}
     }, {
         {
             name = "PlayerHealth",
@@ -158,6 +158,4 @@ function PandaUIPlayer:Initialize()
             }
         }
     });
-
-    for k, v in pairs(self.root.refs.playerHealth) do print(k, ' - ', v); end
 end
