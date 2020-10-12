@@ -119,6 +119,7 @@ function PandaUICore:CreateFrame(name, details, children)
     end
 
     local frame = CreateFrame(t, n, p, tmp);
+    if details.hidden then frame:Hide(); end
     frame:SetParent(p);
     frame.refs = {};
     frame:SetBackdrop({
@@ -141,12 +142,13 @@ function PandaUICore:CreateFrame(name, details, children)
                    anchor.offsetY);
 
     if children then
+        local totalParts = 0;
         local childLayout = d.childLayout or {};
         -- pre calculate parts
         if childLayout then
-            childLayout.totalParts = 0;
             for i, child in ipairs(children) do
                 local childParts = 0;
+
                 if child.layout then
                     childParts = child.layout.parts or 1;
                     child.layout.parts = childParts;
@@ -155,7 +157,11 @@ function PandaUICore:CreateFrame(name, details, children)
                     child.layout = {parts = childParts}
                 end
 
-                childLayout.totalParts = childLayout.totalParts + childParts;
+                -- ignore hidden elements
+                if not child.hidden then
+                    totalParts = totalParts + childParts;
+                end
+
             end
         end
 
@@ -168,22 +174,25 @@ function PandaUICore:CreateFrame(name, details, children)
                 -- horizontal children have same height as parent
                 -- calculate width based on parts
                 local childWidth = frame:GetWidth() *
-                                       (child.layout.parts /
-                                           childLayout.totalParts);
+                                       (child.layout.parts / totalParts);
                 child.width = PandaUICore:val(childWidth);
                 child.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
                                                   currentChildOffsetX, 0);
-                currentChildOffsetX = currentChildOffsetX + childWidth;
+                if not child.hidden then
+                    currentChildOffsetX = currentChildOffsetX + childWidth;
+                end
             elseif childLayout.direction == "vertical" then
                 -- vertical children have same width as parent
                 -- calculate height based on parts
                 local childHeight = frame:GetHeight() *
-                                        (child.layout.parts /
-                                            childLayout.totalParts);
+                                        (child.layout.parts / totalParts);
                 child.height = PandaUICore:val(childHeight);
                 child.anchor = PandaUICore:anchor("TOPLEFT", nil, 0,
                                                   -currentChildOffsetY);
-                currentChildOffsetY = currentChildOffsetY + childHeight;
+
+                if not child.hidden then
+                    currentChildOffsetY = currentChildOffsetY + childHeight;
+                end
             end
 
             local childFrame = PandaUICore:CreateFrame(child.name, child,

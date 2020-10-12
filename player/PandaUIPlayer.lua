@@ -100,6 +100,7 @@ function PandaUIPlayer:Initialize()
             children = {
                 {
                     name = "SecondaryPower",
+                    hidden = not powerInfo.secondary,
                     backgroundColor = powerInfo.secondaryColor,
                     events = {
                         UNIT_POWER_FREQUENT = function(self, unit, type)
