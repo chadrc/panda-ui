@@ -1,5 +1,6 @@
 PandaUIPlayer = {};
 
+-- Copied from CombatText Blizzard Addon
 local powerEnumFromEnergizeStringLookup =
     {
         MANA = Enum.PowerType.Mana,
@@ -18,30 +19,38 @@ local powerEnumFromEnergizeStringLookup =
         ARCANE_CHARGES = Enum.PowerType.ArcaneCharges,
         FURY = Enum.PowerType.Fury,
         PAIN = Enum.PowerType.Pain,
-        INSANITY = Enum.PowerType.Insanity
+        INSANITY = Enum.PowerType.Insanity,
+        -- Added to avoid one off unique behavior
+        STAGGER = -1
     }
+
+local function MakeSinglePowerInfo(label)
+    return {
+        token = powerEnumFromEnergizeStringLookup[label],
+        color = PowerBarColor[label]
+    };
+end
+
+local function MakePowerInfo(primary, secondary)
+    local info = {primary = MakeSinglePowerInfo(primary)};
+    if secondary then info.secondary = MakeSinglePowerInfo(secondary); end
+
+    function info:GetSecondaryToken()
+        if self.secondary then return self.secondary.token end
+        return nil;
+    end
+    function info:GetSecondaryColor()
+        if self.secondary then return self.secondary.color end
+        return nil;
+    end
+    return info;
+end
 
 local classPowers = {
     MONK = {
-        {
-            -- Brewmaster
-            primary = Enum.PowerType.Energy,
-            primaryColor = PowerBarColor["ENERGY"],
-            secondary = "STAGGER",
-            secondaryColor = PowerBarColor["STAGGER"]
-        }, {
-            -- Mistweaver
-            primary = Enum.PowerType.Mana,
-            primaryColor = PowerBarColor["MANA"],
-            secondary = nil,
-            secondaryColor = nil
-        }, {
-            -- Windwalker
-            primary = Enum.PowerType.Energy,
-            primaryColor = PowerBarColor["ENERGY"],
-            secondary = Enum.PowerType.Chi,
-            secondaryColor = PowerBarColor["CHI"]
-        }
+        MakePowerInfo("ENERGY", "STAGGER"), -- Brewmaster
+        MakePowerInfo("MANA"), -- Mistweaver
+        MakePowerInfo("ENERGY", "CHI") -- Windwalker
     }
 }
 
@@ -81,7 +90,7 @@ function PandaUIPlayer:Initialize()
             children = {
                 {
                     name = "CurrentHealth",
-                    backgroundColor = {r = 0, g = 1, b = 0, a = 1},
+                    backgroundColor = {r = 0, g = 1, b = 0},
                     anchor = PandaUICore:anchor("RIGHT"),
                     events = {
                         UNIT_HEALTH = function(s, unit)
@@ -106,14 +115,15 @@ function PandaUIPlayer:Initialize()
                 {
                     name = "SecondaryPower",
                     hidden = not self.powerInfo.secondary,
-                    backgroundColor = self.powerInfo.secondaryColor,
+                    backgroundColor = self.powerInfo:GetSecondaryColor(),
                     events = {
                         UNIT_POWER_FREQUENT = function(s, unit, type)
                             if unit == "player" then
                                 local powerType =
                                     powerEnumFromEnergizeStringLookup[type];
 
-                                if powerType == self.powerInfo.secondary then
+                                if powerType ==
+                                    self.powerInfo:GetSecondaryToken() then
                                     local maxHealthWidth =
                                         s:GetParent():GetWidth();
                                     local maxHealth =
@@ -136,23 +146,22 @@ function PandaUIPlayer:Initialize()
 
                             s.details.hidden = not self.powerInfo.secondary;
                             s.details.backgroundColor =
-                                self.powerInfo.secondaryColor;
+                                self.powerInfo:GetSecondaryColor();
 
-                            -- s:UpdateStyles();
                             s:GetParent():UpdateLayout();
                         end
                     }
                 }, {
                     name = "PrimaryPower",
                     layout = {parts = 2},
-                    backgroundColor = self.powerInfo.primaryColor,
+                    backgroundColor = self.powerInfo.primary.color,
                     events = {
                         UNIT_POWER_FREQUENT = function(s, unit, type)
                             if unit == "player" then
                                 local powerType =
                                     powerEnumFromEnergizeStringLookup[type];
 
-                                if powerType == self.powerInfo.primary then
+                                if powerType == self.powerInfo.primary.token then
                                     local maxHealthWidth =
                                         s:GetParent():GetWidth();
                                     local maxHealth =

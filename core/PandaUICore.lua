@@ -84,7 +84,7 @@ function PandaUICore:Initialize()
     self.rootFrame:SetSize(self.rootFrame:GetParent():GetWidth(),
                            self.rootFrame:GetParent():GetHeight());
     self.rootFrame:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+        bgFile = "Interface\\Buttons\\WHITE8X8",
         tile = true
     });
     self.rootFrame:SetBackdropColor(0, 0, 0, 0);
@@ -135,10 +135,7 @@ function PandaUICore:CreateFrame(name, details, children)
         end
 
         self:SetParent(p);
-        self:SetBackdrop({
-            bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-            tile = true
-        });
+        self:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8X8", tile = true});
         self:SetBackdropColor(0, 0, 0, 0);
 
         if d.backgroundColor then
