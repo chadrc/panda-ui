@@ -21,7 +21,51 @@ local powerEnumFromEnergizeStringLookup =
         INSANITY = Enum.PowerType.Insanity
     }
 
+local classPowers = {
+    MONK = {
+        {
+            -- Brewmaster
+            primary = Enum.PowerType.Energy,
+            primaryColor = PowerBarColor["ENERGY"],
+            secondary = "STAGGER",
+            secondaryColor = PowerBarColor["STAGGER"]
+        }, {
+            -- Mistweaver
+            primary = Enum.PowerType.Mana,
+            primaryColor = PowerBarColor["MANA"],
+            secondary = nil,
+            secondaryColor = nil
+        }, {
+            -- Windwalker
+            primary = Enum.PowerType.Energy,
+            primaryColor = PowerBarColor["ENERGY"],
+            secondary = Enum.PowerType.Chi,
+            secondaryColor = PowerBarColor["CHI"]
+        }
+    }
+}
+
 function PandaUIPlayer:Initialize()
+    local _, playerClass = UnitClass("player");
+    self.spec = GetSpecialization();
+    self.playerClass = playerClass;
+
+    local powerInfo = {
+        primary = Enum.PowerType.Mana,
+        primaryColor = PowerBarColor["MANA"],
+        secondary = nil,
+        secondaryColor = nil
+    }
+
+    -- temporary check to avoid errors while developing
+    -- eventually all should be registered
+    if classPowers[playerClass] and classPowers[playerClass][self.spec] then
+        powerInfo = classPowers[playerClass][self.spec];
+    else
+        print('Class ', playerClass, ' with spec ', self.spec,
+              ' not configured. Using defaults.')
+    end
+
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
         layout = {direction = "horizontal"}
@@ -57,23 +101,31 @@ function PandaUIPlayer:Initialize()
                 {
                     name = "PrimaryPower",
                     ref = "primaryPower",
-                    backgroundColor = {r = 0, g = 0, b = 1, a = 1},
+                    backgroundColor = powerInfo.primaryColor,
                     anchor = PandaUICore:anchor("LEFT"),
                     events = {
                         UNIT_POWER_FREQUENT = function(self, unit, type)
                             if unit == "player" then
-                                print("power change: ", type);
-                                local primaryPowerFrame = self;
-                                local maxHealthWidth =
-                                    primaryPowerFrame:GetParent():GetWidth();
                                 local powerType =
                                     powerEnumFromEnergizeStringLookup[type];
-                                local maxHealth = UnitPowerMax(unit, powerType);
-                                local currentHealth = UnitPower(unit, powerType);
-                                local newWidth =
-                                    maxHealthWidth * (currentHealth / maxHealth);
 
-                                primaryPowerFrame:SetWidth(newWidth);
+                                if powerType == powerInfo.primary then
+                                    print("primary change: ", type);
+                                    local primaryPowerFrame = self;
+                                    local maxHealthWidth =
+                                        primaryPowerFrame:GetParent():GetWidth();
+                                    local maxHealth =
+                                        UnitPowerMax(unit, powerType);
+                                    local currentHealth =
+                                        UnitPower(unit, powerType);
+                                    local newWidth =
+                                        maxHealthWidth *
+                                            (currentHealth / maxHealth);
+
+                                    primaryPowerFrame:SetWidth(newWidth);
+                                elseif powerType == powerInfo.secondary then
+                                    print('secondary change ', type);
+                                end
                             end
                         end
                     }
