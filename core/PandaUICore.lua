@@ -140,7 +140,7 @@ function PandaUICore:CreateFrame(name, details, children)
     frame:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
                    anchor.offsetY);
 
-    local layout = d.layout or {};
+    local childLayout = d.childLayout or {};
     if children then
         -- horizontal children have same height as parent
         -- and share horizontal space evenly
@@ -150,7 +150,7 @@ function PandaUICore:CreateFrame(name, details, children)
         for i, child in ipairs(children) do
             child.parent = frame;
 
-            if layout.direction == "horizontal" then
+            if childLayout.direction == "horizontal" then
                 child.width = PandaUICore:val(childWidth);
                 child.height = PandaUICore:val(childHeight);
                 child.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,

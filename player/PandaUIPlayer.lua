@@ -68,7 +68,7 @@ function PandaUIPlayer:Initialize()
 
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
-        layout = {direction = "horizontal"}
+        childLayout = {direction = "horizontal"}
     }, {
         {
             name = "PlayerHealth",
@@ -97,7 +97,7 @@ function PandaUIPlayer:Initialize()
             }
         }, {
             name = "Power",
-            layout = {direction = "vertical"},
+            childLayout = {direction = "vertical"},
             children = {
                 {
                     name = "SecondaryPower",
