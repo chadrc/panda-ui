@@ -158,18 +158,32 @@ function PandaUICore:CreateFrame(name, details, children)
                 childLayout.totalParts = childLayout.totalParts + childParts;
             end
         end
+
+        local currentChildOffsetX = 0;
+        local currentChildOffsetY = 0;
         for i, child in ipairs(children) do
             child.parent = frame;
 
             if childLayout.direction == "horizontal" then
                 -- horizontal children have same height as parent
-                -- and share horizontal space evenly
+                -- calculate width based on parts
                 local childWidth = frame:GetWidth() *
                                        (child.layout.parts /
                                            childLayout.totalParts);
                 child.width = PandaUICore:val(childWidth);
                 child.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
-                                                  (i - 1) * childWidth, 0);
+                                                  currentChildOffsetX, 0);
+                currentChildOffsetX = currentChildOffsetX + childWidth;
+            elseif childLayout.direction == "vertical" then
+                -- vertical children have same width as parent
+                -- calculate height based on parts
+                local childHeight = frame:GetHeight() *
+                                        (child.layout.parts /
+                                            childLayout.totalParts);
+                child.height = PandaUICore:val(childHeight);
+                child.anchor = PandaUICore:anchor("TOPLEFT", nil, 0,
+                                                  -currentChildOffsetY);
+                currentChildOffsetY = currentChildOffsetY + childHeight;
             end
 
             local childFrame = PandaUICore:CreateFrame(child.name, child,

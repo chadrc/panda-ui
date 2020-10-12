@@ -75,7 +75,6 @@ function PandaUIPlayer:Initialize()
             children = {
                 {
                     name = "CurrentHealth",
-                    ref = "playerHealth",
                     backgroundColor = {r = 0, g = 1, b = 0, a = 1},
                     anchor = PandaUICore:anchor("RIGHT"),
                     events = {
@@ -102,8 +101,6 @@ function PandaUIPlayer:Initialize()
                 {
                     name = "SecondaryPower",
                     backgroundColor = powerInfo.secondaryColor,
-                    anchor = PandaUICore:anchor("TOPLEFT"),
-                    height = PandaUICore:pct(30),
                     events = {
                         UNIT_POWER_FREQUENT = function(self, unit, type)
                             if unit == "player" then
@@ -128,10 +125,8 @@ function PandaUIPlayer:Initialize()
                     }
                 }, {
                     name = "PrimaryPower",
-                    ref = "primaryPower",
+                    layout = {parts = 2},
                     backgroundColor = powerInfo.primaryColor,
-                    anchor = PandaUICore:anchor("BOTTOMLEFT"),
-                    height = PandaUICore:pct(70),
                     events = {
                         UNIT_POWER_FREQUENT = function(self, unit, type)
                             if unit == "player" then
