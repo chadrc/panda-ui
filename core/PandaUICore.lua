@@ -104,13 +104,13 @@ local function ExtractValue(info, parentValue)
 end
 
 function PandaUICore:CreateFrame(name, details, children)
-    local t = "Frame";
-    local tmp = nil;
-    local p = self.rootFrame;
+    local d = details or {};
+    local tmp = d.template;
+    local t = d.type or "Frame";
+    local p = d.parent or self.rootFrame;
     local width = p:GetWidth();
     local height = p:GetHeight();
     local anchor = PandaUICore:anchor();
-    local d = details or {};
     local n = name;
     if n then
         n = p:GetName() .. n;
@@ -119,15 +119,13 @@ function PandaUICore:CreateFrame(name, details, children)
     end
 
     local frame = CreateFrame(t, n, p, tmp);
+    frame:SetParent(p);
+    frame.refs = {};
     frame:SetBackdrop({
         bgFile = "Interface/Tooltips/UI-Tooltip-Background",
         tile = true
     });
     frame:SetBackdropColor(0, 0, 0, 0);
-
-    t = d.type or t;
-    p = d.parent or p;
-    tmp = d.template or tmp;
 
     if d.backgroundColor then
         local c = d.backgroundColor;
@@ -146,7 +144,6 @@ function PandaUICore:CreateFrame(name, details, children)
     if children then
         -- horizontal children have same height as parent
         -- and share horizontal space evenly
-        local childFrames = {};
         local childWidth = frame:GetWidth() / table.getn(children);
         local childHeight = frame:GetHeight();
 
@@ -162,8 +159,8 @@ function PandaUICore:CreateFrame(name, details, children)
 
             local childFrame = PandaUICore:CreateFrame(child.name, child,
                                                        child.children);
-            if child.key then frame[child.key] = childFrame; end
-            table.insert(childFrames, childFrame);
+            for k, v in pairs(childFrame.refs) do frame.refs[k] = v end
+            if child.ref then frame.refs[child.ref] = childFrame end
         end
     end
 
