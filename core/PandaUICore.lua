@@ -150,8 +150,6 @@ function PandaUICore:CreateFrame(name, details, children)
         height = ExtractValue(d.height, height) or height;
         anchor = d.anchor or anchor;
 
-        print('setting size of ', self:GetName(), ' - ', width, ', ', height);
-
         self:SetSize(width, height);
         self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
                       anchor.offsetY);

@@ -84,17 +84,16 @@ function PandaUIPlayer:Initialize()
                     backgroundColor = {r = 0, g = 1, b = 0, a = 1},
                     anchor = PandaUICore:anchor("RIGHT"),
                     events = {
-                        UNIT_HEALTH = function(self, unit)
+                        UNIT_HEALTH = function(s, unit)
                             if unit == "player" then
-                                local healthFrame = self;
-                                local maxHealthWidth =
-                                    healthFrame:GetParent():GetWidth();
+                                local maxHealthWidth = s:GetParent():GetWidth();
                                 local maxHealth = UnitHealthMax(unit);
                                 local currentHealth = UnitHealth(unit);
                                 local newWidth =
                                     maxHealthWidth * (currentHealth / maxHealth);
 
-                                healthFrame:SetWidth(newWidth);
+                                s.details.width = PandaUICore:val(newWidth);
+                                s:UpdateStyles();
                             end
                         end
                     }
@@ -125,7 +124,8 @@ function PandaUIPlayer:Initialize()
                                         maxHealthWidth *
                                             (currentHealth / maxHealth);
 
-                                    s:SetWidth(newWidth);
+                                    s.details.width = PandaUICore:val(newWidth);
+                                    s:UpdateStyles();
                                 end
                             end
                         end,
@@ -163,7 +163,8 @@ function PandaUIPlayer:Initialize()
                                         maxHealthWidth *
                                             (currentHealth / maxHealth);
 
-                                    s:SetWidth(newWidth);
+                                    s.details.width = PandaUICore:val(newWidth);
+                                    s:UpdateStyles();
                                 end
                             end
                         end,
