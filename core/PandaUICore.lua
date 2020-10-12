@@ -121,6 +121,42 @@ function PandaUICore:CreateFrame(name, details, children)
     frame.details = d;
     frame.refs = {};
 
+    local childFrames = {};
+    if children then
+        for i, child in ipairs(children) do
+            child.parent = frame;
+
+            local childFrame = PandaUICore:CreateFrame(child.name, child,
+                                                       child.children);
+            table.insert(childFrames, childFrame);
+
+            for k, v in pairs(childFrame.refs) do frame.refs[k] = v end
+            if child.ref then frame.refs[child.ref] = childFrame end
+        end
+    end
+    frame.childFrames = childFrames;
+
+    local eventCount = 0;
+    for name, _ in pairs(d.events or {}) do
+        frame:RegisterEvent(name);
+        eventCount = eventCount + 1;
+    end
+
+    if eventCount > 0 then
+        frame:SetScript("OnEvent", function(self, event, ...)
+            if self.events[event] then self.events[event](self, ...); end
+        end)
+    end
+
+    frame.events = d.events;
+
+    -- Public interface
+
+    function frame:Init()
+        if self.details.init then self.details.init(self); end
+        for _, childFrame in pairs(self.childFrames) do childFrame:Init() end
+    end
+
     function frame:UpdateStyles()
         local d = self.details;
         local p = d.parent;
@@ -213,35 +249,6 @@ function PandaUICore:CreateFrame(name, details, children)
             child:UpdateLayout();
         end
     end
-
-    local childFrames = {};
-    if children then
-        for i, child in ipairs(children) do
-            child.parent = frame;
-
-            local childFrame = PandaUICore:CreateFrame(child.name, child,
-                                                       child.children);
-            table.insert(childFrames, childFrame);
-
-            for k, v in pairs(childFrame.refs) do frame.refs[k] = v end
-            if child.ref then frame.refs[child.ref] = childFrame end
-        end
-    end
-    frame.childFrames = childFrames;
-
-    local eventCount = 0;
-    for name, _ in pairs(d.events or {}) do
-        frame:RegisterEvent(name);
-        eventCount = eventCount + 1;
-    end
-
-    if eventCount > 0 then
-        frame:SetScript("OnEvent", function(self, event, ...)
-            if self.events[event] then self.events[event](self, ...); end
-        end)
-    end
-
-    frame.events = d.events;
 
     return frame;
 end

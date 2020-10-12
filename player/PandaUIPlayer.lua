@@ -26,6 +26,7 @@ local powerEnumFromEnergizeStringLookup =
 
 local function MakeSinglePowerInfo(label)
     return {
+        label = label,
         token = powerEnumFromEnergizeStringLookup[label],
         color = PowerBarColor[label]
     };
@@ -35,14 +36,21 @@ local function MakePowerInfo(primary, secondary)
     local info = {primary = MakeSinglePowerInfo(primary)};
     if secondary then info.secondary = MakeSinglePowerInfo(secondary); end
 
+    function info:GetSecondaryLabel()
+        if self.secondary then return self.secondary.label end
+        return nil;
+    end
+
     function info:GetSecondaryToken()
         if self.secondary then return self.secondary.token end
         return nil;
     end
+
     function info:GetSecondaryColor()
         if self.secondary then return self.secondary.color end
         return nil;
     end
+
     return info;
 end
 
@@ -81,6 +89,32 @@ function PandaUIPlayer:Initialize()
 
     self.powerInfo = GetPowerInfo(playerClass, self.spec);
 
+    local PowerUpdater = function(powerTokenGetter)
+        return function(frame, unit, type)
+            if unit == "player" then
+                local powerType = powerEnumFromEnergizeStringLookup[type];
+
+                if powerType == powerTokenGetter() then
+                    local maxHealthWidth = frame:GetParent():GetWidth();
+                    local maxHealth = UnitPowerMax(unit, powerType);
+                    local currentHealth = UnitPower(unit, powerType);
+                    local newWidth = maxHealthWidth *
+                                         (currentHealth / maxHealth);
+
+                    frame.details.width = PandaUICore:val(newWidth);
+                    frame:UpdateStyles();
+                end
+            end
+        end
+    end
+
+    local SecondaryPower = PowerUpdater(function()
+        return self.powerInfo:GetSecondaryToken()
+    end);
+    local PrimaryPower = PowerUpdater(function()
+        return self.powerInfo.primary.token
+    end);
+
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
         childLayout = {direction = "horizontal"}
@@ -116,29 +150,12 @@ function PandaUIPlayer:Initialize()
                     name = "SecondaryPower",
                     hidden = not self.powerInfo.secondary,
                     backgroundColor = self.powerInfo:GetSecondaryColor(),
+                    init = function(frame)
+                        SecondaryPower(frame, "player",
+                                       self.powerInfo:GetSecondaryLabel())
+                    end,
                     events = {
-                        UNIT_POWER_FREQUENT = function(s, unit, type)
-                            if unit == "player" then
-                                local powerType =
-                                    powerEnumFromEnergizeStringLookup[type];
-
-                                if powerType ==
-                                    self.powerInfo:GetSecondaryToken() then
-                                    local maxHealthWidth =
-                                        s:GetParent():GetWidth();
-                                    local maxHealth =
-                                        UnitPowerMax(unit, powerType);
-                                    local currentHealth =
-                                        UnitPower(unit, powerType);
-                                    local newWidth =
-                                        maxHealthWidth *
-                                            (currentHealth / maxHealth);
-
-                                    s.details.width = PandaUICore:val(newWidth);
-                                    s:UpdateStyles();
-                                end
-                            end
-                        end,
+                        UNIT_POWER_FREQUENT = SecondaryPower,
                         ACTIVE_TALENT_GROUP_CHANGED = function(s)
                             local newSpec = GetSpecialization();
                             self.spec = newSpec;
@@ -155,28 +172,12 @@ function PandaUIPlayer:Initialize()
                     name = "PrimaryPower",
                     layout = {parts = 2},
                     backgroundColor = self.powerInfo.primary.color,
+                    init = function(frame)
+                        PrimaryPower(frame, "player",
+                                     self.powerInfo.primary.label)
+                    end,
                     events = {
-                        UNIT_POWER_FREQUENT = function(s, unit, type)
-                            if unit == "player" then
-                                local powerType =
-                                    powerEnumFromEnergizeStringLookup[type];
-
-                                if powerType == self.powerInfo.primary.token then
-                                    local maxHealthWidth =
-                                        s:GetParent():GetWidth();
-                                    local maxHealth =
-                                        UnitPowerMax(unit, powerType);
-                                    local currentHealth =
-                                        UnitPower(unit, powerType);
-                                    local newWidth =
-                                        maxHealthWidth *
-                                            (currentHealth / maxHealth);
-
-                                    s.details.width = PandaUICore:val(newWidth);
-                                    s:UpdateStyles();
-                                end
-                            end
-                        end,
+                        UNIT_POWER_FREQUENT = PrimaryPower,
                         ACTIVE_TALENT_GROUP_CHANGED = function(s)
                             local newSpec = GetSpecialization();
                             self.spec = newSpec;
@@ -194,4 +195,5 @@ function PandaUIPlayer:Initialize()
 
     self.root:UpdateStyles();
     self.root:UpdateLayout();
+    self.root:Init();
 end
