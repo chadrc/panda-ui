@@ -138,7 +138,8 @@ function PandaUIPlayer:Initialize()
                             s.details.backgroundColor =
                                 self.powerInfo.secondaryColor;
 
-                            s:UpdateStyles();
+                            -- s:UpdateStyles();
+                            s:GetParent():UpdateLayout();
                         end
                     }
                 }, {
@@ -171,7 +172,6 @@ function PandaUIPlayer:Initialize()
                             self.spec = newSpec;
                             local powerInfo = GetPowerInfo(playerClass, newSpec);
 
-                            s.details.hidden = not powerInfo.primary;
                             s.details.backgroundColor = powerInfo.primaryColor;
 
                             s:UpdateStyles();
@@ -181,4 +181,7 @@ function PandaUIPlayer:Initialize()
             }
         }
     });
+
+    self.root:UpdateStyles();
+    self.root:UpdateLayout();
 end

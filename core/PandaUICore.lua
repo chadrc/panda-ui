@@ -119,6 +119,7 @@ function PandaUICore:CreateFrame(name, details, children)
 
     local frame = CreateFrame(t, n, p, tmp);
     frame.details = d;
+    frame.refs = {};
 
     function frame:UpdateStyles()
         local d = self.details;
@@ -128,95 +129,110 @@ function PandaUICore:CreateFrame(name, details, children)
         local anchor = PandaUICore:anchor();
 
         if d.hidden then
-            frame:Hide();
+            self:Hide();
         else
-            frame:Show()
+            self:Show()
         end
 
-        frame:SetParent(p);
-        frame.refs = {};
-        frame:SetBackdrop({
+        self:SetParent(p);
+        self:SetBackdrop({
             bgFile = "Interface/Tooltips/UI-Tooltip-Background",
             tile = true
         });
-        frame:SetBackdropColor(0, 0, 0, 0);
+        self:SetBackdropColor(0, 0, 0, 0);
 
         if d.backgroundColor then
             local c = d.backgroundColor;
-            frame:SetBackdropColor(c.r, c.g, c.b, c.a);
+            self:SetBackdropColor(c.r, c.g, c.b, c.a);
         end
 
         width = ExtractValue(d.width, width) or width;
         height = ExtractValue(d.height, height) or height;
         anchor = d.anchor or anchor;
 
-        frame:SetSize(width, height);
-        frame:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
-                       anchor.offsetY);
+        print('setting size of ', self:GetName(), ' - ', width, ', ', height);
+
+        self:SetSize(width, height);
+        self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
+                      anchor.offsetY);
     end
 
-    frame:UpdateStyles();
-
-    if children then
+    function frame:UpdateLayout()
         local totalParts = 0;
-        local childLayout = d.childLayout or {};
+        local childLayout = self.details.childLayout or {};
+
         -- pre calculate parts
-        if childLayout then
-            for i, child in ipairs(children) do
-                local childParts = 0;
+        for i, childFrame in ipairs(self.childFrames) do
+            local child = childFrame.details;
+            local childParts = 0;
 
-                if child.layout then
-                    childParts = child.layout.parts or 1;
-                    child.layout.parts = childParts;
-                else
-                    childParts = 1;
-                    child.layout = {parts = childParts}
-                end
+            if child.layout then
+                childParts = child.layout.parts or 1;
+                child.layout.parts = childParts;
+            else
+                childParts = 1;
+                child.layout = {parts = childParts}
+            end
 
-                -- ignore hidden elements
-                if not child.hidden then
-                    totalParts = totalParts + childParts;
-                end
-
+            -- ignore hidden elements
+            if not child.hidden then
+                totalParts = totalParts + childParts;
             end
         end
 
         local currentChildOffsetX = 0;
         local currentChildOffsetY = 0;
-        for i, child in ipairs(children) do
-            child.parent = frame;
-
+        for i, child in pairs(self.childFrames) do
+            -- layout children according to options
             if childLayout.direction == "horizontal" then
                 -- horizontal children have same height as parent
                 -- calculate width based on parts
+                child.details.height = PandaUICore:val(self:GetHeight());
+
                 local childWidth = frame:GetWidth() *
-                                       (child.layout.parts / totalParts);
-                child.width = PandaUICore:val(childWidth);
-                child.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
-                                                  currentChildOffsetX, 0);
-                if not child.hidden then
+                                       (child.details.layout.parts / totalParts);
+                child.details.width = PandaUICore:val(childWidth);
+                child.details.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
+                                                          currentChildOffsetX, 0);
+
+                if not child.details.hidden then
                     currentChildOffsetX = currentChildOffsetX + childWidth;
                 end
             elseif childLayout.direction == "vertical" then
                 -- vertical children have same width as parent
                 -- calculate height based on parts
-                local childHeight = frame:GetHeight() *
-                                        (child.layout.parts / totalParts);
-                child.height = PandaUICore:val(childHeight);
-                child.anchor = PandaUICore:anchor("TOPLEFT", nil, 0,
-                                                  -currentChildOffsetY);
+                child.details.width = PandaUICore:val(self:GetWidth());
 
-                if not child.hidden then
+                local childHeight = frame:GetHeight() *
+                                        (child.details.layout.parts / totalParts);
+                child.details.height = PandaUICore:val(childHeight);
+                child.details.anchor = PandaUICore:anchor("TOPLEFT", nil, 0,
+                                                          -currentChildOffsetY);
+
+                if not child.details.hidden then
                     currentChildOffsetY = currentChildOffsetY + childHeight;
                 end
             end
 
+            child:UpdateStyles();
+            child:UpdateLayout();
+        end
+    end
+
+    local childFrames = {};
+    if children then
+        for i, child in ipairs(children) do
+            child.parent = frame;
+
             local childFrame = PandaUICore:CreateFrame(child.name, child,
                                                        child.children);
+            table.insert(childFrames, childFrame);
+
             for k, v in pairs(childFrame.refs) do frame.refs[k] = v end
             if child.ref then frame.refs[child.ref] = childFrame end
         end
     end
+    frame.childFrames = childFrames;
 
     local eventCount = 0;
     for name, _ in pairs(d.events or {}) do
