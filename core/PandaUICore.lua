@@ -107,39 +107,55 @@ function PandaUICore:CreateFrame(name, details, children)
     local d = details or {};
     local tmp = d.template;
     local t = d.type or "Frame";
-    local p = d.parent or self.rootFrame;
-    local width = p:GetWidth();
-    local height = p:GetHeight();
-    local anchor = PandaUICore:anchor();
+    local root = self.rootFrame;
+    d.parent = d.parent or root;
     local n = name;
     if n then
-        n = p:GetName() .. n;
+        n = d.parent:GetName() .. n;
     else
-        n = p:GetName() .. "_ChildFrame_" .. tostring(p:GetNumChildren() + 1);
+        n = d.parent:GetName() .. "_ChildFrame_" ..
+                tostring(d.parent:GetNumChildren() + 1);
     end
 
     local frame = CreateFrame(t, n, p, tmp);
-    if details.hidden then frame:Hide(); end
-    frame:SetParent(p);
-    frame.refs = {};
-    frame:SetBackdrop({
-        bgFile = "Interface/Tooltips/UI-Tooltip-Background",
-        tile = true
-    });
-    frame:SetBackdropColor(0, 0, 0, 0);
+    frame.details = d;
 
-    if d.backgroundColor then
-        local c = d.backgroundColor;
-        frame:SetBackdropColor(c.r, c.g, c.b, c.a);
+    function frame:UpdateStyles()
+        local d = self.details;
+        local p = d.parent;
+        local width = p:GetWidth();
+        local height = p:GetHeight();
+        local anchor = PandaUICore:anchor();
+
+        if d.hidden then
+            frame:Hide();
+        else
+            frame:Show()
+        end
+
+        frame:SetParent(p);
+        frame.refs = {};
+        frame:SetBackdrop({
+            bgFile = "Interface/Tooltips/UI-Tooltip-Background",
+            tile = true
+        });
+        frame:SetBackdropColor(0, 0, 0, 0);
+
+        if d.backgroundColor then
+            local c = d.backgroundColor;
+            frame:SetBackdropColor(c.r, c.g, c.b, c.a);
+        end
+
+        width = ExtractValue(d.width, width) or width;
+        height = ExtractValue(d.height, height) or height;
+        anchor = d.anchor or anchor;
+
+        frame:SetSize(width, height);
+        frame:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
+                       anchor.offsetY);
     end
 
-    width = ExtractValue(d.width, width) or width;
-    height = ExtractValue(d.height, height) or height;
-    anchor = d.anchor or anchor;
-
-    frame:SetSize(width, height);
-    frame:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
-                   anchor.offsetY);
+    frame:UpdateStyles();
 
     if children then
         local totalParts = 0;

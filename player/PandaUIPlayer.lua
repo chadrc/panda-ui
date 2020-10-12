@@ -45,11 +45,7 @@ local classPowers = {
     }
 }
 
-function PandaUIPlayer:Initialize()
-    local _, playerClass = UnitClass("player");
-    self.spec = GetSpecialization();
-    self.playerClass = playerClass;
-
+local function GetPowerInfo(class, spec)
     local powerInfo = {
         primary = Enum.PowerType.Mana,
         primaryColor = PowerBarColor["MANA"],
@@ -59,12 +55,22 @@ function PandaUIPlayer:Initialize()
 
     -- temporary check to avoid errors while developing
     -- eventually all should be registered
-    if classPowers[playerClass] and classPowers[playerClass][self.spec] then
-        powerInfo = classPowers[playerClass][self.spec];
+    if classPowers[class] and classPowers[class][spec] then
+        powerInfo = classPowers[class][spec];
     else
-        print('Class ', playerClass, ' with spec ', self.spec,
+        print('Class ', class, ' with spec ', spec,
               ' not configured. Using defaults.')
     end
+
+    return powerInfo;
+end
+
+function PandaUIPlayer:Initialize()
+    local _, playerClass = UnitClass("player");
+    self.spec = GetSpecialization();
+    self.playerClass = playerClass;
+
+    self.powerInfo = GetPowerInfo(playerClass, self.spec);
 
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
@@ -100,17 +106,17 @@ function PandaUIPlayer:Initialize()
             children = {
                 {
                     name = "SecondaryPower",
-                    hidden = not powerInfo.secondary,
-                    backgroundColor = powerInfo.secondaryColor,
+                    hidden = not self.powerInfo.secondary,
+                    backgroundColor = self.powerInfo.secondaryColor,
                     events = {
-                        UNIT_POWER_FREQUENT = function(self, unit, type)
+                        UNIT_POWER_FREQUENT = function(s, unit, type)
                             if unit == "player" then
                                 local powerType =
                                     powerEnumFromEnergizeStringLookup[type];
 
-                                if powerType == powerInfo.secondary then
+                                if powerType == self.powerInfo.secondary then
                                     local maxHealthWidth =
-                                        self:GetParent():GetWidth();
+                                        s:GetParent():GetWidth();
                                     local maxHealth =
                                         UnitPowerMax(unit, powerType);
                                     local currentHealth =
@@ -119,24 +125,35 @@ function PandaUIPlayer:Initialize()
                                         maxHealthWidth *
                                             (currentHealth / maxHealth);
 
-                                    self:SetWidth(newWidth);
+                                    s:SetWidth(newWidth);
                                 end
                             end
+                        end,
+                        ACTIVE_TALENT_GROUP_CHANGED = function(s)
+                            local newSpec = GetSpecialization();
+                            self.spec = newSpec;
+                            self.powerInfo = GetPowerInfo(playerClass, newSpec);
+
+                            s.details.hidden = not self.powerInfo.secondary;
+                            s.details.backgroundColor =
+                                self.powerInfo.secondaryColor;
+
+                            s:UpdateStyles();
                         end
                     }
                 }, {
                     name = "PrimaryPower",
                     layout = {parts = 2},
-                    backgroundColor = powerInfo.primaryColor,
+                    backgroundColor = self.powerInfo.primaryColor,
                     events = {
-                        UNIT_POWER_FREQUENT = function(self, unit, type)
+                        UNIT_POWER_FREQUENT = function(s, unit, type)
                             if unit == "player" then
                                 local powerType =
                                     powerEnumFromEnergizeStringLookup[type];
 
-                                if powerType == powerInfo.primary then
+                                if powerType == self.powerInfo.primary then
                                     local maxHealthWidth =
-                                        self:GetParent():GetWidth();
+                                        s:GetParent():GetWidth();
                                     local maxHealth =
                                         UnitPowerMax(unit, powerType);
                                     local currentHealth =
@@ -145,9 +162,19 @@ function PandaUIPlayer:Initialize()
                                         maxHealthWidth *
                                             (currentHealth / maxHealth);
 
-                                    self:SetWidth(newWidth);
+                                    s:SetWidth(newWidth);
                                 end
                             end
+                        end,
+                        ACTIVE_TALENT_GROUP_CHANGED = function(s)
+                            local newSpec = GetSpecialization();
+                            self.spec = newSpec;
+                            local powerInfo = GetPowerInfo(playerClass, newSpec);
+
+                            s.details.hidden = not powerInfo.primary;
+                            s.details.backgroundColor = powerInfo.primaryColor;
+
+                            s:UpdateStyles();
                         end
                     }
                 }
