@@ -129,7 +129,8 @@ function PandaUIPlayer:Initialize()
                     events = {
                         UNIT_HEALTH = function(frame, unit)
                             if unit == "player" then
-                                local maxHealthWidth = s:GetParent():GetWidth();
+                                local maxHealthWidth =
+                                    frame:GetParent():GetWidth();
                                 local maxHealth = UnitHealthMax(unit);
                                 local currentHealth = UnitHealth(unit);
                                 local newWidth =
