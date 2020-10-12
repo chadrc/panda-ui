@@ -127,7 +127,7 @@ function PandaUIPlayer:Initialize()
                     backgroundColor = {r = 0, g = 1, b = 0},
                     anchor = PandaUICore:anchor("RIGHT"),
                     events = {
-                        UNIT_HEALTH = function(s, unit)
+                        UNIT_HEALTH = function(frame, unit)
                             if unit == "player" then
                                 local maxHealthWidth = s:GetParent():GetWidth();
                                 local maxHealth = UnitHealthMax(unit);
@@ -135,8 +135,8 @@ function PandaUIPlayer:Initialize()
                                 local newWidth =
                                     maxHealthWidth * (currentHealth / maxHealth);
 
-                                s.details.width = PandaUICore:val(newWidth);
-                                s:UpdateStyles();
+                                frame.details.width = PandaUICore:val(newWidth);
+                                frame:UpdateStyles();
                             end
                         end
                     }
@@ -156,16 +156,16 @@ function PandaUIPlayer:Initialize()
                     end,
                     events = {
                         UNIT_POWER_FREQUENT = SecondaryPower,
-                        ACTIVE_TALENT_GROUP_CHANGED = function(s)
+                        ACTIVE_TALENT_GROUP_CHANGED = function(frame)
                             local newSpec = GetSpecialization();
                             self.spec = newSpec;
                             self.powerInfo = GetPowerInfo(playerClass, newSpec);
 
-                            s.details.hidden = not self.powerInfo.secondary;
-                            s.details.backgroundColor =
+                            frame.details.hidden = not self.powerInfo.secondary;
+                            frame.details.backgroundColor =
                                 self.powerInfo:GetSecondaryColor();
 
-                            s:GetParent():UpdateLayout();
+                            frame:GetParent():UpdateLayout();
                         end
                     }
                 }, {
@@ -178,14 +178,15 @@ function PandaUIPlayer:Initialize()
                     end,
                     events = {
                         UNIT_POWER_FREQUENT = PrimaryPower,
-                        ACTIVE_TALENT_GROUP_CHANGED = function(s)
+                        ACTIVE_TALENT_GROUP_CHANGED = function(frame)
                             local newSpec = GetSpecialization();
                             self.spec = newSpec;
                             local powerInfo = GetPowerInfo(playerClass, newSpec);
 
-                            s.details.backgroundColor = powerInfo.primaryColor;
+                            frame.details.backgroundColor =
+                                powerInfo.primaryColor;
 
-                            s:UpdateStyles();
+                            frame:UpdateStyles();
                         end
                     }
                 }
