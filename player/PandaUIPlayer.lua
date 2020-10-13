@@ -90,7 +90,7 @@ function PandaUIPlayer:Initialize()
     self.powerInfo = GetPowerInfo(playerClass, self.spec);
 
     local PowerUpdater = function(powerTokenGetter)
-        return function(frame, unit, type)
+        return function(frame, unit, type, update)
             if unit == "player" then
                 local powerType = powerEnumFromEnergizeStringLookup[type];
 
@@ -102,7 +102,10 @@ function PandaUIPlayer:Initialize()
                                          (currentHealth / maxHealth);
 
                     frame.details.width = PandaUICore:val(newWidth);
-                    frame:UpdateStyles();
+
+                    if update ~= false then
+                        frame:UpdateStyles();
+                    end
                 end
             end
         end
@@ -115,9 +118,50 @@ function PandaUIPlayer:Initialize()
         return self.powerInfo.primary.token
     end);
 
+    local CheckForStagger = function()
+        -- stagger is not considered a unit power
+        -- copying what FrameXML MonkStaggerBar does and update stagger display in update
+        -- register if Monk class and Brewmaster spec
+        -- else, unregister
+        if playerClass == "MONK" and self.spec == 1 then
+            self.root:SetScript("OnUpdate", function(self)
+                local max = UnitHealthMax("player");
+                local cur = UnitStagger("player");
+
+                local maxWidth = self.refs.secondaryPower:GetParent():GetWidth();
+                local newWidth = maxWidth * (cur / max);
+
+                self.refs.secondaryPower.details.width =
+                    PandaUICore:val(newWidth);
+                self.refs.secondaryPower:UpdateStyles();
+            end)
+        else
+            self.root:SetScript("OnUpdate", nil)
+        end
+    end
+
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
-        childLayout = {direction = "horizontal"}
+        childLayout = {direction = "horizontal"},
+        events = {
+            ACTIVE_TALENT_GROUP_CHANGED = function(frame)
+                local newSpec = GetSpecialization();
+                self.spec = newSpec;
+                self.powerInfo = GetPowerInfo(playerClass, newSpec);
+
+                CheckForStagger();
+
+                frame.refs.primaryPower.details.backgroundColor =
+                    self.powerInfo.primary.color;
+
+                frame.refs.secondaryPower.details.hidden =
+                    not self.powerInfo.secondary;
+                frame.refs.secondaryPower.details.backgroundColor =
+                    self.powerInfo:GetSecondaryColor();
+
+                frame.refs.power:UpdateLayout();
+            end
+        }
     }, {
         {
             name = "PlayerHealth",
@@ -145,55 +189,35 @@ function PandaUIPlayer:Initialize()
             }
         }, {
             name = "Power",
+            ref = "power",
             childLayout = {direction = "vertical"},
             children = {
                 {
                     name = "SecondaryPower",
+                    ref = "secondaryPower",
                     hidden = not self.powerInfo.secondary,
                     backgroundColor = self.powerInfo:GetSecondaryColor(),
                     init = function(frame)
                         SecondaryPower(frame, "player",
                                        self.powerInfo:GetSecondaryLabel())
                     end,
-                    events = {
-                        UNIT_POWER_FREQUENT = SecondaryPower,
-                        ACTIVE_TALENT_GROUP_CHANGED = function(frame)
-                            local newSpec = GetSpecialization();
-                            self.spec = newSpec;
-                            self.powerInfo = GetPowerInfo(playerClass, newSpec);
-
-                            frame.details.hidden = not self.powerInfo.secondary;
-                            frame.details.backgroundColor =
-                                self.powerInfo:GetSecondaryColor();
-
-                            frame:GetParent():UpdateLayout();
-                        end
-                    }
+                    events = {UNIT_POWER_FREQUENT = SecondaryPower}
                 }, {
                     name = "PrimaryPower",
+                    ref = "primaryPower",
                     layout = {parts = 2},
                     backgroundColor = self.powerInfo.primary.color,
                     init = function(frame)
                         PrimaryPower(frame, "player",
                                      self.powerInfo.primary.label)
                     end,
-                    events = {
-                        UNIT_POWER_FREQUENT = PrimaryPower,
-                        ACTIVE_TALENT_GROUP_CHANGED = function(frame)
-                            local newSpec = GetSpecialization();
-                            self.spec = newSpec;
-                            local powerInfo = GetPowerInfo(playerClass, newSpec);
-
-                            frame.details.backgroundColor =
-                                powerInfo.primaryColor;
-
-                            frame:UpdateStyles();
-                        end
-                    }
+                    events = {UNIT_POWER_FREQUENT = PrimaryPower}
                 }
             }
         }
     });
+
+    CheckForStagger();
 
     self.root:UpdateStyles();
     self.root:UpdateLayout();
