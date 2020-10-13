@@ -143,6 +143,7 @@ function PandaUIPlayer:Initialize()
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
         childLayout = {direction = "horizontal"},
+        backgroundColor = {r = 0, g = 0, b = 0, a = .2},
         events = {
             ACTIVE_TALENT_GROUP_CHANGED = function(frame)
                 local newSpec = GetSpecialization();
