@@ -1,4 +1,4 @@
-## Interface: 90002
+## Interface: 90001
 ## Title: PandaUI
 ## Author: YulePanda
 ## Version: 0.1
