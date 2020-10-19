@@ -63,12 +63,7 @@ local classPowers = {
 }
 
 local function GetPowerInfo(class, spec)
-    local powerInfo = {
-        primary = Enum.PowerType.Mana,
-        primaryColor = PowerBarColor["MANA"],
-        secondary = nil,
-        secondaryColor = nil
-    }
+    local powerInfo = MakePowerInfo("MANA")
 
     -- temporary check to avoid errors while developing
     -- eventually all should be registered

@@ -80,7 +80,8 @@ function PandaUICore:ToggleBlizzardUI()
 end
 
 function PandaUICore:Initialize()
-    self.rootFrame = CreateFrame("Frame", "PandaUIRootFrame", UIParent)
+    self.rootFrame = CreateFrame("Frame", "PandaUIRootFrame", UIParent,
+                                 BackdropTemplateMixin and "BackdropTemplate")
     self.rootFrame:SetSize(self.rootFrame:GetParent():GetWidth(),
                            self.rootFrame:GetParent():GetHeight());
     self.rootFrame:SetBackdrop({
@@ -117,7 +118,8 @@ function PandaUICore:CreateFrame(name, details, children)
                 tostring(d.parent:GetNumChildren() + 1);
     end
 
-    local frame = CreateFrame(t, n, p, tmp);
+    local frame = CreateFrame(t, n, d.parent,
+                              BackdropTemplateMixin and "BackdropTemplate");
     frame.details = d;
     frame.refs = {};
 
