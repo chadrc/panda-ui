@@ -129,54 +129,6 @@ local function PowerUpdater(powerTokenGetter)
 end
 
 function PandaUIPlayer:PlayerPowerFrame()
-    local SecondaryPower = PowerUpdater(function()
-        return self.powerInfo:GetSecondaryToken()
-    end);
-    local PrimaryPower = PowerUpdater(function()
-        return self.powerInfo.primary.token
-    end);
-
-    local function ForcePrimary(frame)
-        PrimaryPower(frame, "player", self.powerInfo.primary.label)
-    end
-
-    local function ForceSecondary(frame)
-        SecondaryPower(frame, "player", self.powerInfo:GetSecondaryLabel())
-    end
-
-    return {
-        name = "Power",
-        ref = "power",
-        childLayout = {direction = "vertical"},
-        children = {
-            {
-                name = "SecondaryPower",
-                ref = "secondaryPower",
-                hidden = not self.powerInfo.secondary,
-                backgroundColor = self.powerInfo:GetSecondaryColor(),
-                init = ForceSecondary,
-                events = {
-                    UNIT_POWER_FREQUENT = SecondaryPower,
-                    PLAYER_ENTERING_WORLD = ForceSecondary,
-                    UNIT_DISPLAYPOWER = ForceSecondary
-                }
-            }, {
-                name = "PrimaryPower",
-                ref = "primaryPower",
-                layout = {parts = 2},
-                backgroundColor = self.powerInfo.primary.color,
-                init = ForcePrimary,
-                events = {
-                    UNIT_POWER_FREQUENT = PrimaryPower,
-                    PLAYER_ENTERING_WORLD = ForcePrimary,
-                    UNIT_DISPLAYPOWER = ForcePrimary
-                }
-            }
-        }
-    }
-end
-
-function PandaUIPlayer:Initialize()
     local _, playerClass = UnitClass("player");
     self.spec = GetSpecialization();
     self.playerClass = playerClass;
@@ -205,10 +157,51 @@ function PandaUIPlayer:Initialize()
         end
     end
 
-    self.root = PandaUICore:CreateFrame("PlayerBars", {
-        height = PandaUICore:val(150),
-        childLayout = {direction = "horizontal"},
-        backgroundColor = {r = 0, g = 0, b = 0, a = .2},
+    local SecondaryPower = PowerUpdater(function()
+        return self.powerInfo:GetSecondaryToken()
+    end);
+    local PrimaryPower = PowerUpdater(function()
+        return self.powerInfo.primary.token
+    end);
+
+    local function ForcePrimary(frame)
+        PrimaryPower(frame, "player", self.powerInfo.primary.label)
+    end
+
+    local function ForceSecondary(frame)
+        SecondaryPower(frame, "player", self.powerInfo:GetSecondaryLabel())
+    end
+
+    -- CheckForStagger();
+    return {
+        name = "Power",
+        ref = "power",
+        childLayout = {direction = "vertical"},
+        children = {
+            {
+                name = "SecondaryPower",
+                ref = "secondaryPower",
+                hidden = not self.powerInfo.secondary,
+                backgroundColor = self.powerInfo:GetSecondaryColor(),
+                init = ForceSecondary,
+                events = {
+                    UNIT_POWER_FREQUENT = SecondaryPower,
+                    PLAYER_ENTERING_WORLD = ForceSecondary,
+                    UNIT_DISPLAYPOWER = ForceSecondary
+                }
+            }, {
+                name = "PrimaryPower",
+                ref = "primaryPower",
+                layout = {parts = 2},
+                backgroundColor = self.powerInfo.primary.color,
+                init = ForcePrimary,
+                events = {
+                    UNIT_POWER_FREQUENT = PrimaryPower,
+                    PLAYER_ENTERING_WORLD = ForcePrimary,
+                    UNIT_DISPLAYPOWER = ForcePrimary
+                }
+            }
+        },
         events = {
             ACTIVE_TALENT_GROUP_CHANGED = function(frame)
                 local newSpec = GetSpecialization();
@@ -225,12 +218,19 @@ function PandaUIPlayer:Initialize()
                 frame.refs.secondaryPower.details.backgroundColor =
                     self.powerInfo:GetSecondaryColor();
 
-                frame.refs.power:UpdateLayout();
+                frame:UpdateLayout();
             end
         }
-    }, {self:PlayerHealthFrame(), self:PlayerPowerFrame()});
+    }
+end
 
-    CheckForStagger();
+function PandaUIPlayer:Initialize()
+
+    self.root = PandaUICore:CreateFrame("PlayerBars", {
+        height = PandaUICore:val(150),
+        childLayout = {direction = "horizontal"},
+        backgroundColor = {r = 0, g = 0, b = 0, a = .2}
+    }, {self:PlayerHealthFrame(), self:PlayerPowerFrame()});
 
     self.root:UpdateStyles();
     self.root:UpdateLayout();
