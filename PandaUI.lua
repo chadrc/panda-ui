@@ -15,24 +15,15 @@ function PandaUI_OnSlash(msg)
     end
 end
 
-local eventHandlers = {};
-
 function PandaUIMainFrame_OnLoad()
-    print("Panda UI Load");
-
-    -- PandaUIMainFrame:RegisterEvent("PLAYER_FOCUS_CHANGED");
-    -- PandaUIMainFrame:RegisterEvent("PLAYER_TARGET_CHANGED");
-
     PandaUIMainFrame:RegisterEvent("ADDON_LOADED");
 
     PandaUICore:Initialize();
     PandaUIPlayer:Initialize();
 
-    for event, _ in pairs(eventHandlers) do
-        PandaUIMainFrame:RegisterEvent(event, "player")
-    end
-
     SlashCmdList["PANDAUI"] = PandaUI_OnSlash;
+
+    print("Panda UI Load");
 end
 
 function PandaUIMainFrame_OnEvent(self, event, ...)
