@@ -1,8 +1,5 @@
 SLASH_PANDAUI1 = "/pandaui";
 
-local hasTarget = false;
-local hostFocus = false;
-
 function PandaUI_OnSlash(msg)
     if msg == "hide_blizz" then
         PandaUICore:HideBlizzardUI();
