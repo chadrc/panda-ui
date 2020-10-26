@@ -28,5 +28,23 @@ function PandaUIMainFrame_OnEvent(self, event, ...)
     local name = ...;
     if event == "ADDON_LOADED" and name == "PandaUI" then
         PandaUICore:HidePandaUI();
+
+        -- local testFrame = PandaUICore:CreateFrame("TestStatus", {
+        --     type = "StatusBar",
+        --     init = function(frame)
+        --         frame:SetStatusBarColor(1.0, 1.0, 0.0)
+        --         frame:SetMinMaxValues(0, 100);
+        --         frame:SetValue(30);
+        --         frame:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8");
+        --     end,
+        --     anchor = PandaUICore:anchor("CENTER"),
+        --     height = PandaUICore:val(20),
+        --     width = PandaUICore:val(100),
+        --     backgroundColor = {r = 0, g = 0, b = 1.0}
+        -- });
+
+        -- testFrame:UpdateStyles();
+        -- testFrame:UpdateLayout();
+        -- testFrame:Init();
     end
 end

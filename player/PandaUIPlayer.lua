@@ -224,13 +224,40 @@ function PandaUIPlayer:PlayerPowerFrame()
     }
 end
 
+function PandaUIPlayer:PlayerExpBar()
+    local function Update(frame)
+        local current = UnitXP("player");
+        local max = UnitXPMax("player");
+
+        frame:SetMinMaxValues(0, max);
+        frame:SetValue(current);
+    end
+
+    return {
+        name = "ExpBar",
+        type = "StatusBar",
+        init = function(frame)
+            frame:SetStatusBarColor(1.0, 1.0, 0.0)
+            frame:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8");
+            Update(frame);
+        end,
+        events = {PLAYER_ENTERING_WORLD = Update, PLAYER_XP_UPDATE = Update}
+    };
+end
+
 function PandaUIPlayer:Initialize()
 
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
-        childLayout = {direction = "horizontal"},
-        backgroundColor = {r = 0, g = 0, b = 0, a = .2}
-    }, {self:PlayerHealthFrame(), self:PlayerPowerFrame()});
+        childLayout = {direction = "vertical"},
+        backgroundColor = {r = 0, g = 0, b = 0, a = .5}
+    }, {
+        {
+            layout = {parts = 6},
+            childLayout = {direction = "horizontal"},
+            children = {self:PlayerHealthFrame(), self:PlayerPowerFrame()}
+        }, self:PlayerExpBar()
+    });
 
     self.root:UpdateStyles();
     self.root:UpdateLayout();
