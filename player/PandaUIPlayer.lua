@@ -59,6 +59,11 @@ local classPowers = {
         MakePowerInfo("ENERGY", "STAGGER"), -- Brewmaster
         MakePowerInfo("MANA"), -- Mistweaver
         MakePowerInfo("ENERGY", "CHI") -- Windwalker
+    },
+    MAGE = {
+        MakePowerInfo("MANA", "ARCANE_CHARGES"), -- Arcane
+        MakePowerInfo("MANA"), -- Fire
+        MakePowerInfo("MANA") -- Frost
     }
 }
 
@@ -85,22 +90,21 @@ function PandaUIPlayer:Initialize()
     self.powerInfo = GetPowerInfo(playerClass, self.spec);
 
     local PowerUpdater = function(powerTokenGetter)
-        return function(frame, unit, type, update)
+        return function(frame, unit, type)
             if unit == "player" then
                 local powerType = powerEnumFromEnergizeStringLookup[type];
 
                 if powerType == powerTokenGetter() then
-                    local maxHealthWidth = frame:GetParent():GetWidth();
-                    local maxHealth = UnitPowerMax(unit, powerType);
-                    local currentHealth = UnitPower(unit, powerType);
-                    local newWidth = maxHealthWidth *
-                                         (currentHealth / maxHealth);
+                    local maxWidth = frame:GetParent():GetWidth();
+                    local max = UnitPowerMax(unit, powerType);
+                    local current = UnitPower(unit, powerType);
+                    local newWidth = maxWidth * (current / max);
+
+                    print(max, " - ", current);
 
                     frame.details.width = PandaUICore:val(newWidth);
 
-                    if update ~= false then
-                        frame:UpdateStyles();
-                    end
+                    frame:UpdateStyles();
                 end
             end
         end
