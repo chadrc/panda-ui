@@ -82,40 +82,95 @@ local function GetPowerInfo(class, spec)
     return powerInfo;
 end
 
-function PandaUIPlayer:Initialize()
-    local _, playerClass = UnitClass("player");
-    self.spec = GetSpecialization();
-    self.playerClass = playerClass;
+function PandaUIPlayer:PlayerHealthFrame()
+    return {
+        name = "PlayerHealth",
+        children = {
+            {
+                name = "CurrentHealth",
+                backgroundColor = {r = 0, g = 1, b = 0},
+                anchor = PandaUICore:anchor("RIGHT"),
+                events = {
+                    UNIT_HEALTH = function(frame, unit)
+                        if unit == "player" then
+                            local maxHealthWidth = frame:GetParent():GetWidth();
+                            local maxHealth = UnitHealthMax(unit);
+                            local currentHealth = UnitHealth(unit);
+                            local newWidth =
+                                maxHealthWidth * (currentHealth / maxHealth);
 
-    self.powerInfo = GetPowerInfo(playerClass, self.spec);
+                            frame.details.width = PandaUICore:val(newWidth);
+                            frame:UpdateStyles();
+                        end
+                    end
+                }
+            }
+        }
+    }
+end
 
-    local PowerUpdater = function(powerTokenGetter)
-        return function(frame, unit, type)
-            if unit == "player" then
-                local powerType = powerEnumFromEnergizeStringLookup[type];
+local function PowerUpdater(powerTokenGetter)
+    return function(frame, unit, type)
+        if unit == "player" then
+            local powerType = powerEnumFromEnergizeStringLookup[type];
 
-                if powerType == powerTokenGetter() then
-                    local maxWidth = frame:GetParent():GetWidth();
-                    local max = UnitPowerMax(unit, powerType);
-                    local current = UnitPower(unit, powerType);
-                    local newWidth = maxWidth * (current / max);
+            if powerType == powerTokenGetter() then
+                local maxWidth = frame:GetParent():GetWidth();
+                local max = UnitPowerMax(unit, powerType);
+                local current = UnitPower(unit, powerType);
+                local newWidth = maxWidth * (current / max);
 
-                    print(max, " - ", current);
+                frame.details.width = PandaUICore:val(newWidth);
 
-                    frame.details.width = PandaUICore:val(newWidth);
-
-                    frame:UpdateStyles();
-                end
+                frame:UpdateStyles();
             end
         end
     end
+end
 
+function PandaUIPlayer:PlayerPowerFrame()
     local SecondaryPower = PowerUpdater(function()
         return self.powerInfo:GetSecondaryToken()
     end);
     local PrimaryPower = PowerUpdater(function()
         return self.powerInfo.primary.token
     end);
+
+    return {
+        name = "Power",
+        ref = "power",
+        childLayout = {direction = "vertical"},
+        children = {
+            {
+                name = "SecondaryPower",
+                ref = "secondaryPower",
+                hidden = not self.powerInfo.secondary,
+                backgroundColor = self.powerInfo:GetSecondaryColor(),
+                init = function(frame)
+                    SecondaryPower(frame, "player",
+                                   self.powerInfo:GetSecondaryLabel())
+                end,
+                events = {UNIT_POWER_FREQUENT = SecondaryPower}
+            }, {
+                name = "PrimaryPower",
+                ref = "primaryPower",
+                layout = {parts = 2},
+                backgroundColor = self.powerInfo.primary.color,
+                init = function(frame)
+                    PrimaryPower(frame, "player", self.powerInfo.primary.label)
+                end,
+                events = {UNIT_POWER_FREQUENT = PrimaryPower}
+            }
+        }
+    }
+end
+
+function PandaUIPlayer:Initialize()
+    local _, playerClass = UnitClass("player");
+    self.spec = GetSpecialization();
+    self.playerClass = playerClass;
+
+    self.powerInfo = GetPowerInfo(playerClass, self.spec);
 
     local CheckForStagger = function()
         -- stagger is not considered a unit power
@@ -162,60 +217,7 @@ function PandaUIPlayer:Initialize()
                 frame.refs.power:UpdateLayout();
             end
         }
-    }, {
-        {
-            name = "PlayerHealth",
-            children = {
-                {
-                    name = "CurrentHealth",
-                    backgroundColor = {r = 0, g = 1, b = 0},
-                    anchor = PandaUICore:anchor("RIGHT"),
-                    events = {
-                        UNIT_HEALTH = function(frame, unit)
-                            if unit == "player" then
-                                local maxHealthWidth =
-                                    frame:GetParent():GetWidth();
-                                local maxHealth = UnitHealthMax(unit);
-                                local currentHealth = UnitHealth(unit);
-                                local newWidth =
-                                    maxHealthWidth * (currentHealth / maxHealth);
-
-                                frame.details.width = PandaUICore:val(newWidth);
-                                frame:UpdateStyles();
-                            end
-                        end
-                    }
-                }
-            }
-        }, {
-            name = "Power",
-            ref = "power",
-            childLayout = {direction = "vertical"},
-            children = {
-                {
-                    name = "SecondaryPower",
-                    ref = "secondaryPower",
-                    hidden = not self.powerInfo.secondary,
-                    backgroundColor = self.powerInfo:GetSecondaryColor(),
-                    init = function(frame)
-                        SecondaryPower(frame, "player",
-                                       self.powerInfo:GetSecondaryLabel())
-                    end,
-                    events = {UNIT_POWER_FREQUENT = SecondaryPower}
-                }, {
-                    name = "PrimaryPower",
-                    ref = "primaryPower",
-                    layout = {parts = 2},
-                    backgroundColor = self.powerInfo.primary.color,
-                    init = function(frame)
-                        PrimaryPower(frame, "player",
-                                     self.powerInfo.primary.label)
-                    end,
-                    events = {UNIT_POWER_FREQUENT = PrimaryPower}
-                }
-            }
-        }
-    });
+    }, {self:PlayerHealthFrame(), self:PlayerPowerFrame()});
 
     CheckForStagger();
 
@@ -223,3 +225,4 @@ function PandaUIPlayer:Initialize()
     self.root:UpdateLayout();
     self.root:Init();
 end
+

@@ -189,8 +189,6 @@ function PandaUICore:CreateFrame(name, details, children)
         if width == 0 then width = 0.000001; end
         if height == 0 then height = 0.000001; end
 
-        print(width, ', ', height);
-
         self:SetSize(width, height);
         self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
                       anchor.offsetY);
