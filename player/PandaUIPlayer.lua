@@ -136,6 +136,14 @@ function PandaUIPlayer:PlayerPowerFrame()
         return self.powerInfo.primary.token
     end);
 
+    local function ForcePrimary(frame)
+        PrimaryPower(frame, "player", self.powerInfo.primary.label)
+    end
+
+    local function ForceSecondary(frame)
+        SecondaryPower(frame, "player", self.powerInfo:GetSecondaryLabel())
+    end
+
     return {
         name = "Power",
         ref = "power",
@@ -146,20 +154,23 @@ function PandaUIPlayer:PlayerPowerFrame()
                 ref = "secondaryPower",
                 hidden = not self.powerInfo.secondary,
                 backgroundColor = self.powerInfo:GetSecondaryColor(),
-                init = function(frame)
-                    SecondaryPower(frame, "player",
-                                   self.powerInfo:GetSecondaryLabel())
-                end,
-                events = {UNIT_POWER_FREQUENT = SecondaryPower}
+                init = ForceSecondary,
+                events = {
+                    UNIT_POWER_FREQUENT = SecondaryPower,
+                    PLAYER_ENTERING_WORLD = ForceSecondary,
+                    UNIT_DISPLAYPOWER = ForceSecondary
+                }
             }, {
                 name = "PrimaryPower",
                 ref = "primaryPower",
                 layout = {parts = 2},
                 backgroundColor = self.powerInfo.primary.color,
-                init = function(frame)
-                    PrimaryPower(frame, "player", self.powerInfo.primary.label)
-                end,
-                events = {UNIT_POWER_FREQUENT = PrimaryPower}
+                init = ForcePrimary,
+                events = {
+                    UNIT_POWER_FREQUENT = PrimaryPower,
+                    PLAYER_ENTERING_WORLD = ForcePrimary,
+                    UNIT_DISPLAYPOWER = ForcePrimary
+                }
             }
         }
     }
