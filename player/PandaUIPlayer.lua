@@ -245,14 +245,121 @@ function PandaUIPlayer:PlayerExpBar()
     };
 end
 
-function PandaUIPlayer:Initialize()
+function PandaUIPlayer:PlayerCastingBar()
+    local function UpdateCast(frame, elapsed)
+        frame.value = frame.value + elapsed;
+        frame:SetValue(frame.value);
+    end
 
+    local function UpdateChannel(frame, elapsed)
+        frame.value = frame.value - elapsed;
+        frame:SetValue(frame.value);
+    end
+
+    local function Update(frame, elapsed)
+        if frame.casting then
+            UpdateCast(frame, elapsed);
+        elseif frame.channeling then
+            UpdateChannel(frame, elapsed);
+        end
+    end
+
+    local function EndCast(frame, unit)
+        if unit ~= "player" then return end
+        frame.casting = false;
+        frame.channeling = false;
+        frame:SetMinMaxValues(0, 1);
+        frame:SetValue(0);
+    end
+
+    return {
+        name = "CastingBar",
+        children = {
+            {
+                name = "Status",
+                type = "StatusBar",
+                init = function(frame)
+                    frame:SetStatusBarColor(1.0, 1.0, 0.0);
+                    local texture = frame:CreateTexture(
+                                        "PandaUIPlayerCastBarTexture");
+                    texture:SetTexture("Interface\\Buttons\\WHITE8X8");
+                    texture:SetColorTexture(0, .8, .8);
+                    frame:SetStatusBarTexture(texture);
+                    frame:SetMinMaxValues(0, 1);
+                    frame:SetValue(0);
+
+                    frame:SetScript("OnUpdate", function(frame, elapsed)
+                        Update(frame, elapsed);
+                    end)
+                end,
+                events = {
+                    UNIT_SPELLCAST_START = function(frame, unit)
+                        if unit ~= "player" then return end
+                        local name, text, texture, startTime, endTime,
+                              isTradeSkill, castID, notInterruptible =
+                            UnitCastingInfo("player");
+
+                        frame.casting = true;
+                        frame.channeling = false;
+                        frame.value = (GetTime() - (startTime / 1000));
+                        frame.maxValue = (endTime - startTime) / 1000;
+                        frame:SetMinMaxValues(0, frame.maxValue);
+                        frame:SetValue(frame.value);
+                    end,
+                    UNIT_SPELLCAST_DELAYED = function(frame, unit)
+                        if unit ~= "player" then return end
+                        local name, text, texture, startTime, endTime,
+                              isTradeSkill, castID, notInterruptible =
+                            UnitCastingInfo("player");
+
+                        frame.value = (GetTime() - (startTime / 1000));
+                        frame.maxValue = (endTime - startTime) / 1000;
+                        frame:SetMinMaxValues(0, frame.maxValue);
+                        frame:SetValue(frame.value);
+                    end,
+                    UNIT_SPELLCAST_STOP = EndCast,
+                    UNIT_SPELLCAST_FAILED = EndCast,
+                    UNIT_SPELLCAST_INTERRUPTED = EndCast,
+                    UNIT_SPELLCAST_CHANNEL_START = function(frame, unit)
+                        if unit ~= "player" then return end
+
+                        local name, text, texture, startTime, endTime,
+                              isTradeSkill, notInterruptible, spellID =
+                            UnitChannelInfo("player");
+
+                        frame.channeling = true;
+                        frame.casting = false;
+                        frame.value = (endTime / 1000) - GetTime();
+                        frame.maxValue = (endTime - startTime) / 1000;
+                        frame:SetMinMaxValues(0, frame.maxValue);
+                        frame:SetValue(frame.value);
+                    end,
+                    UNIT_SPELLCAST_CHANNEL_UPDATE = function(frame, unit)
+                        if unit ~= "player" then return end
+
+                        local name, text, texture, startTime, endTime,
+                              isTradeSkill, notInterruptible, spellID =
+                            UnitChannelInfo("player");
+
+                        frame.value = (endTime / 1000) - GetTime();
+                        frame.maxValue = (endTime - startTime) / 1000;
+                        frame:SetMinMaxValues(0, frame.maxValue);
+                        frame:SetValue(frame.value);
+                    end,
+                    UNIT_SPELLCAST_CHANNEL_STOP = EndCast
+                }
+            }
+        }
+    }
+end
+
+function PandaUIPlayer:Initialize()
     self.root = PandaUICore:CreateFrame("PlayerBars", {
         height = PandaUICore:val(150),
         childLayout = {direction = "vertical"},
         backgroundColor = {r = 0, g = 0, b = 0, a = .5}
     }, {
-        {
+        self:PlayerCastingBar(), {
             layout = {parts = 6},
             childLayout = {direction = "horizontal"},
             children = {self:PlayerHealthFrame(), self:PlayerPowerFrame()}
