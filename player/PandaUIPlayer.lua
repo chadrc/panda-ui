@@ -83,28 +83,32 @@ local function GetPowerInfo(class, spec)
 end
 
 function PandaUIPlayer:PlayerHealthFrame()
+    local function Update(frame)
+        local max = UnitHealthMax("player");
+        local cur = UnitHealth("player");
+
+        frame:SetMinMaxValues(0, max);
+        frame:SetValue(cur);
+    end
+
     return {
         name = "PlayerHealth",
+        backgroundColor = {r = 0, g = .8, b = 0, a = .2},
         children = {
-            {
-                name = "CurrentHealth",
-                backgroundColor = {r = 0, g = 1, b = 0},
-                anchor = PandaUICore:anchor("RIGHT"),
+            PandaUICore:StatusBar({
+                statusBar = {color = {r = 0, g = .8, b = 0, a = 1.0}},
+                init = function(frame)
+                    frame:SetReverseFill(true);
+                    Update(frame);
+                end,
                 events = {
                     UNIT_HEALTH = function(frame, unit)
                         if unit == "player" then
-                            local maxHealthWidth = frame:GetParent():GetWidth();
-                            local maxHealth = UnitHealthMax(unit);
-                            local currentHealth = UnitHealth(unit);
-                            local newWidth =
-                                maxHealthWidth * (currentHealth / maxHealth);
-
-                            frame.details.width = PandaUICore:val(newWidth);
-                            frame:UpdateStyles();
+                            Update(frame);
                         end
                     end
                 }
-            }
+            })
         }
     }
 end
