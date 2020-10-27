@@ -241,6 +241,12 @@ end
 
 function PandaUIPlayer:PlayerExpBar()
     local function Update(frame)
+        if IsPlayerAtEffectiveMaxLevel() then
+            frame.details.hidden = true;
+            frame:GetParent():UpdateLayout();
+            return;
+        end
+
         local current = UnitXP("player");
         local max = UnitXPMax("player");
 
