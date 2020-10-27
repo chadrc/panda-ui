@@ -183,7 +183,6 @@ function PandaUIPlayer:PlayerPowerFrame()
                 name = "SecondaryPower",
                 ref = "secondaryPower",
                 hidden = not self.powerInfo.secondary,
-                -- backgroundColor = self.powerInfo:GetSecondaryColor(),
                 statusBar = {color = self.powerInfo:GetSecondaryColor()},
                 init = ForceSecondary,
                 events = {
@@ -195,7 +194,6 @@ function PandaUIPlayer:PlayerPowerFrame()
                 name = "PrimaryPower",
                 ref = "primaryPower",
                 layout = {parts = 2},
-                -- backgroundColor = self.powerInfo.primary.color,
                 statusBar = {color = self.powerInfo.primary.color},
                 init = ForcePrimary,
                 events = {
@@ -214,14 +212,18 @@ function PandaUIPlayer:PlayerPowerFrame()
                 CheckForStagger();
 
                 local pClr = self.powerInfo.primary.color;
-                frame.refs.primaryPower.texture:SetColorTexture(pClr.r, pClr.g, pClr.b, pClr.a);
+                frame.refs.primaryPower.texture:SetColorTexture(pClr.r, pClr.g,
+                                                                pClr.b, pClr.a);
 
                 frame.refs.secondaryPower.details.hidden =
                     not self.powerInfo.secondary;
 
                 local sClr = self.powerInfo:GetSecondaryColor();
                 if sClr then
-                    frame.refs.secondaryPower.texture:SetColorTexture(sClr.r, sClr.g, sClr.b, sClr.a);
+                    frame.refs.secondaryPower.texture:SetColorTexture(sClr.r,
+                                                                      sClr.g,
+                                                                      sClr.b,
+                                                                      sClr.a);
                 end
 
                 frame:UpdateLayout();
