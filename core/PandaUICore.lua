@@ -272,3 +272,23 @@ end
 function PandaUICore:val(v) return {type = "value", value = v}; end
 function PandaUICore:pct(p) return {type = "percentage", value = p}; end
 
+function PandaUICore:StatusBar(details)
+    local orgInit = details.init;
+    local statusDetails = details.statusBar or {};
+
+    local d = {};
+    for k, v in pairs(details) do d[k] = v; end
+
+    d.name = d.name or "StatusBar";
+    d.type = "StatusBar";
+    d.init = function(frame)
+        local clr = statusDetails.color or {r = 1.0, g = 1.0, b = 1.0, a = 1.0};
+        local texture = frame:CreateTexture(frame:GetName() .. "Texture");
+        texture:SetTexture("Interface\\Buttons\\WHITE8X8");
+        texture:SetColorTexture(clr.r, clr.g, clr.b, clr.a);
+        frame:SetStatusBarTexture(texture);
+        if orgInit then orgInit(frame); end
+    end
+
+    return d;
+end

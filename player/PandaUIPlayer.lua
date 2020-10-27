@@ -233,16 +233,11 @@ function PandaUIPlayer:PlayerExpBar()
         frame:SetValue(current);
     end
 
-    return {
+    return PandaUICore:StatusBar({
         name = "ExpBar",
-        type = "StatusBar",
-        init = function(frame)
-            frame:SetStatusBarColor(1.0, 1.0, 0.0)
-            frame:SetStatusBarTexture("Interface\\Buttons\\WHITE8X8");
-            Update(frame);
-        end,
+        init = function(frame) Update(frame); end,
         events = {PLAYER_ENTERING_WORLD = Update, PLAYER_XP_UPDATE = Update}
-    };
+    });
 end
 
 function PandaUIPlayer:PlayerCastingBar()
@@ -275,16 +270,9 @@ function PandaUIPlayer:PlayerCastingBar()
     return {
         name = "CastingBar",
         children = {
-            {
-                name = "Status",
-                type = "StatusBar",
+            PandaUICore:StatusBar({
+                statusBar = {color = {r = 0, g = .8, b = .8}},
                 init = function(frame)
-                    frame:SetStatusBarColor(1.0, 1.0, 0.0);
-                    local texture = frame:CreateTexture(
-                                        "PandaUIPlayerCastBarTexture");
-                    texture:SetTexture("Interface\\Buttons\\WHITE8X8");
-                    texture:SetColorTexture(0, .8, .8);
-                    frame:SetStatusBarTexture(texture);
                     frame:SetMinMaxValues(0, 1);
                     frame:SetValue(0);
 
@@ -348,7 +336,7 @@ function PandaUIPlayer:PlayerCastingBar()
                     end,
                     UNIT_SPELLCAST_CHANNEL_STOP = EndCast
                 }
-            }
+            })
         }
     }
 end
