@@ -106,7 +106,8 @@ function PandaUIPlayer:PlayerHealthFrame()
                         if unit == "player" then
                             Update(frame);
                         end
-                    end
+                    end,
+                    PLAYER_ENTERING_WORLD = Update
                 }
             })
         }
@@ -134,7 +135,7 @@ function PandaUIPlayer:PlayerPowerFrame()
     self.spec = GetSpecialization();
     self.playerClass = playerClass;
 
-    self.powerInfo = GetPowerInfo(playerClass, self.spec);
+    self.powerInfo = MakePowerInfo("MANA");
 
     local CheckForStagger = function()
         -- stagger is not considered a unit power
@@ -204,6 +205,12 @@ function PandaUIPlayer:PlayerPowerFrame()
             })
         },
         events = {
+            PLAYER_ENTERING_WORLD = function(frame)
+                local _, playerClass = UnitClass("player");
+                self.spec = GetSpecialization();
+                self.playerClass = playerClass;
+                self.powerInfo = GetPowerInfo(playerClass, self.spec);
+            end,
             ACTIVE_TALENT_GROUP_CHANGED = function(frame)
                 local newSpec = GetSpecialization();
                 self.spec = newSpec;
