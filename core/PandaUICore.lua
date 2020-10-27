@@ -286,6 +286,7 @@ function PandaUICore:StatusBar(details)
         local texture = frame:CreateTexture(frame:GetName() .. "Texture");
         texture:SetTexture("Interface\\Buttons\\WHITE8X8");
         texture:SetColorTexture(clr.r, clr.g, clr.b, clr.a);
+        frame.texture = texture;
         frame:SetStatusBarTexture(texture);
         if orgInit then orgInit(frame); end
     end

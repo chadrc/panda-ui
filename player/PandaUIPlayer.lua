@@ -119,14 +119,11 @@ local function PowerUpdater(powerTokenGetter)
             local powerType = powerEnumFromEnergizeStringLookup[type];
 
             if powerType == powerTokenGetter() then
-                local maxWidth = frame:GetParent():GetWidth();
                 local max = UnitPowerMax(unit, powerType);
                 local current = UnitPower(unit, powerType);
-                local newWidth = maxWidth * (current / max);
 
-                frame.details.width = PandaUICore:val(newWidth);
-
-                frame:UpdateStyles();
+                frame:SetMinMaxValues(0, max);
+                frame:SetValue(current);
             end
         end
     end
@@ -182,29 +179,31 @@ function PandaUIPlayer:PlayerPowerFrame()
         ref = "power",
         childLayout = {direction = "vertical"},
         children = {
-            {
+            PandaUICore:StatusBar({
                 name = "SecondaryPower",
                 ref = "secondaryPower",
                 hidden = not self.powerInfo.secondary,
-                backgroundColor = self.powerInfo:GetSecondaryColor(),
+                -- backgroundColor = self.powerInfo:GetSecondaryColor(),
+                statusBar = {color = self.powerInfo:GetSecondaryColor()},
                 init = ForceSecondary,
                 events = {
                     UNIT_POWER_FREQUENT = SecondaryPower,
                     PLAYER_ENTERING_WORLD = ForceSecondary,
                     UNIT_DISPLAYPOWER = ForceSecondary
                 }
-            }, {
+            }), PandaUICore:StatusBar({
                 name = "PrimaryPower",
                 ref = "primaryPower",
                 layout = {parts = 2},
-                backgroundColor = self.powerInfo.primary.color,
+                -- backgroundColor = self.powerInfo.primary.color,
+                statusBar = {color = self.powerInfo.primary.color},
                 init = ForcePrimary,
                 events = {
                     UNIT_POWER_FREQUENT = PrimaryPower,
                     PLAYER_ENTERING_WORLD = ForcePrimary,
                     UNIT_DISPLAYPOWER = ForcePrimary
                 }
-            }
+            })
         },
         events = {
             ACTIVE_TALENT_GROUP_CHANGED = function(frame)
@@ -214,13 +213,16 @@ function PandaUIPlayer:PlayerPowerFrame()
 
                 CheckForStagger();
 
-                frame.refs.primaryPower.details.backgroundColor =
-                    self.powerInfo.primary.color;
+                local pClr = self.powerInfo.primary.color;
+                frame.refs.primaryPower.texture:SetColorTexture(pClr.r, pClr.g, pClr.b, pClr.a);
 
                 frame.refs.secondaryPower.details.hidden =
                     not self.powerInfo.secondary;
-                frame.refs.secondaryPower.details.backgroundColor =
-                    self.powerInfo:GetSecondaryColor();
+
+                local sClr = self.powerInfo:GetSecondaryColor();
+                if sClr then
+                    frame.refs.secondaryPower.texture:SetColorTexture(sClr.r, sClr.g, sClr.b, sClr.a);
+                end
 
                 frame:UpdateLayout();
             end
