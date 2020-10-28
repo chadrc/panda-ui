@@ -19,9 +19,7 @@ local powerEnumFromEnergizeStringLookup =
         ARCANE_CHARGES = Enum.PowerType.ArcaneCharges,
         FURY = Enum.PowerType.Fury,
         PAIN = Enum.PowerType.Pain,
-        INSANITY = Enum.PowerType.Insanity,
-        -- Added to avoid one off unique behavior
-        STAGGER = -1
+        INSANITY = Enum.PowerType.Insanity
     }
 
 local function MakeSinglePowerInfo(label)
@@ -56,7 +54,7 @@ end
 
 local classPowers = {
     MONK = {
-        MakePowerInfo("ENERGY", "STAGGER"), -- Brewmaster
+        MakePowerInfo("ENERGY"), -- Brewmaster
         MakePowerInfo("MANA"), -- Mistweaver
         MakePowerInfo("ENERGY", "CHI") -- Windwalker
     },
@@ -122,6 +120,36 @@ function PandaUIPlayer:PlayerHealthFrame()
         frame:SetValue(cur);
     end
 
+    local function CheckForStagger(frame)
+        local _, playerClass = UnitClass("player");
+        local spec = GetSpecialization();
+
+        if playerClass == "MONK" and spec == 1 then
+            frame:SetScript("OnUpdate", function()
+                local max = UnitHealthMax("player");
+                local cur = UnitHealth("player");
+                local stagger = UnitStagger("player");
+
+                local overlayDetails = frame.refs.staggerOverlay.details;
+                if stagger > 0 then
+                    local p = stagger / max;
+                    overlayDetails.width = PandaUICore:pct(p);
+                    overlayDetails.hidden = false;
+
+                    local offset = (cur / max) * frame:GetWidth();
+                    overlayDetails.anchor =
+                        PandaUICore:anchor("LEFT", "RIGHT", -offset, 0);
+                else
+                    overlayDetails.hidden = true;
+                end
+
+                frame.refs.staggerOverlay:UpdateStyles();
+            end);
+        else
+            frame:SetScript("OnUpdate", nil);
+        end
+    end
+
     return {
         name = "PlayerHealth",
         backgroundColor = {r = 0, g = .8, b = 0, a = .2},
@@ -138,10 +166,17 @@ function PandaUIPlayer:PlayerHealthFrame()
                             Update(frame);
                         end
                     end,
-                    PLAYER_ENTERING_WORLD = Update,
+                    PLAYER_ENTERING_WORLD = function(frame)
+                        CheckForStagger(frame);
+                        Update(frame);
+                    end,
                     UNIT_HEAL_PREDICTION = Update,
                     UNIT_ABSORB_AMOUNT_CHANGED = Update,
-                    UNIT_MAXHEALTH = Update
+                    UNIT_MAXHEALTH = Update,
+                    PLAYER_SPECIALIZATION_CHANGED = function(frame, unit)
+                        if unit ~= "player" then return end
+                        CheckForStagger(frame);
+                    end
                 },
                 children = {
                     {
@@ -157,6 +192,12 @@ function PandaUIPlayer:PlayerHealthFrame()
                         hidden = true,
                         height = PandaUICore:pct(1),
                         backgroundColor = {r = 0.0, g = .8, b = 0.0, a = .5}
+                    }, {
+                        name = "StaggerOverlay",
+                        ref = "staggerOverlay",
+                        hidden = true,
+                        height = PandaUICore:pct(1),
+                        backgroundColor = {r = 0, g = 0, b = 0, a = .5}
                     }
                 }
             })
