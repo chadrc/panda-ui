@@ -250,6 +250,7 @@ function PandaUIPlayer:PlayerPowerFrame()
                     {
                         name = "CostPrediction",
                         ref = "costPrediction",
+                        hidden = true,
                         anchor = PandaUICore:anchor("RIGHT"),
                         height = PandaUICore:pct(100),
                         width = PandaUICore:val(50),
