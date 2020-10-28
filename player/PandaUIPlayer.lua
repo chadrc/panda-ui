@@ -152,7 +152,7 @@ function PandaUIPlayer:PlayerHealthFrame()
 
     return {
         name = "PlayerHealth",
-        backgroundColor = {r = 0, g = .8, b = 0, a = .2},
+        backgroundColor = {r = 0, g = .8, b = 0, a = .05},
         children = {
             PandaUICore:StatusBar({
                 statusBar = {color = {r = 0, g = .8, b = 0, a = 1.0}},
