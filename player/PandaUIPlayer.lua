@@ -404,21 +404,21 @@ function PandaUIPlayer:PlayerExpBar()
 end
 
 function PandaUIPlayer:PlayerCastingBar()
-    local function UpdateCast(frame, elapsed)
-        frame.value = frame.value + elapsed;
-        frame:SetValue(frame.value);
+    local function UpdateCast(frame)
+        local elapsed = GetTime() - (frame.startTime / 1000);
+        frame:SetValue(elapsed);
     end
 
-    local function UpdateChannel(frame, elapsed)
-        frame.value = frame.value - elapsed;
-        frame:SetValue(frame.value);
+    local function UpdateChannel(frame)
+        local elapsed = GetTime() - (frame.startTime / 1000);
+        frame:SetValue(frame.maxValue - elapsed);
     end
 
-    local function Update(frame, elapsed)
+    local function Update(frame)
         if frame.casting then
-            UpdateCast(frame, elapsed);
+            UpdateCast(frame);
         elseif frame.channeling then
-            UpdateChannel(frame, elapsed);
+            UpdateChannel(frame);
         end
     end
 
@@ -452,6 +452,7 @@ function PandaUIPlayer:PlayerCastingBar()
 
                         frame.casting = true;
                         frame.channeling = false;
+                        frame.startTime = startTime;
                         frame.value = (GetTime() - (startTime / 1000));
                         frame.maxValue = (endTime - startTime) / 1000;
                         frame:SetMinMaxValues(0, frame.maxValue);
@@ -463,6 +464,7 @@ function PandaUIPlayer:PlayerCastingBar()
                               isTradeSkill, castID, notInterruptible =
                             UnitCastingInfo("player");
 
+                        frame.startTime = startTime;
                         frame.value = (GetTime() - (startTime / 1000));
                         frame.maxValue = (endTime - startTime) / 1000;
                         frame:SetMinMaxValues(0, frame.maxValue);
@@ -478,6 +480,7 @@ function PandaUIPlayer:PlayerCastingBar()
                               isTradeSkill, notInterruptible, spellID =
                             UnitChannelInfo("player");
 
+                        frame.startTime = startTime;
                         frame.channeling = true;
                         frame.casting = false;
                         frame.value = (endTime / 1000) - GetTime();
@@ -492,6 +495,7 @@ function PandaUIPlayer:PlayerCastingBar()
                               isTradeSkill, notInterruptible, spellID =
                             UnitChannelInfo("player");
 
+                        frame.startTime = startTime;
                         frame.value = (endTime / 1000) - GetTime();
                         frame.maxValue = (endTime - startTime) / 1000;
                         frame:SetMinMaxValues(0, frame.maxValue);
