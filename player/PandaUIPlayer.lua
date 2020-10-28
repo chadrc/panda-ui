@@ -114,6 +114,21 @@ function PandaUIPlayer:PlayerHealthFrame()
     }
 end
 
+local function PositionPrediction(frame, max, current)
+    if not frame.predictedPowerCost then return end
+
+    local parentWidth = frame:GetParent():GetWidth();
+
+    local predictedPercent = frame.predictedPowerCost / max;
+    frame.details.width = PandaUICore:val(predictedPercent * parentWidth);
+
+    local missingPercent = (max - current) / max;
+    frame.details.anchor = PandaUICore:anchor("RIGHT", "RIGHT",
+                                              -missingPercent * parentWidth, 0);
+
+    frame:UpdateStyles();
+end
+
 local function PowerUpdater(powerTokenGetter)
     return function(frame, unit, type)
         if unit == "player" then
@@ -125,6 +140,8 @@ local function PowerUpdater(powerTokenGetter)
 
                 frame:SetMinMaxValues(0, max);
                 frame:SetValue(current);
+
+                PositionPrediction(frame.refs.costPrediction, max, current);
             end
         end
     end
@@ -174,6 +191,44 @@ function PandaUIPlayer:PlayerPowerFrame()
         SecondaryPower(frame, "player", self.powerInfo:GetSecondaryLabel())
     end
 
+    local function StartPrediction(frame, unit)
+        if unit ~= "player" then return end
+
+        local name, text, texture, startTime, endTime, isTradeSkill, castID,
+              notInterruptible, spellID = UnitCastingInfo(unit);
+
+        local powerType = self.powerInfo.primary.token;
+        local cost = 0;
+        local costTable = GetSpellPowerCost(spellID);
+        for _, costInfo in pairs(costTable) do
+            if (costInfo.type == powerType) then
+                cost = costInfo.cost;
+                break
+            end
+        end
+
+        if cost ~= 0 then
+            frame.predictedPowerCost = cost;
+            frame.details.hidden = false;
+
+            local max = UnitPowerMax(unit, powerType);
+            local current = UnitPower(unit, powerType);
+
+            PositionPrediction(frame, max, current);
+        end
+    end
+
+    local function EndPrediction(frame, unit)
+        if unit ~= "player" then return end
+        print("end prediction")
+
+        frame.predictedPowerCost = nil;
+        frame.details.width = PandaUICore:val(0);
+        frame.details.hidden = true;
+
+        frame:UpdateStyles();
+    end
+
     -- CheckForStagger();
     return {
         name = "Power",
@@ -190,6 +245,16 @@ function PandaUIPlayer:PlayerPowerFrame()
                     UNIT_POWER_FREQUENT = SecondaryPower,
                     PLAYER_ENTERING_WORLD = ForceSecondary,
                     UNIT_DISPLAYPOWER = ForceSecondary
+                },
+                children = {
+                    {
+                        name = "CostPrediction",
+                        ref = "costPrediction",
+                        anchor = PandaUICore:anchor("RIGHT"),
+                        height = PandaUICore:pct(100),
+                        width = PandaUICore:val(50),
+                        backgroundColor = {r = 0, g = 0, b = 0, a = .5}
+                    }
                 }
             }), PandaUICore:StatusBar({
                 name = "PrimaryPower",
@@ -201,6 +266,23 @@ function PandaUIPlayer:PlayerPowerFrame()
                     UNIT_POWER_FREQUENT = PrimaryPower,
                     PLAYER_ENTERING_WORLD = ForcePrimary,
                     UNIT_DISPLAYPOWER = ForcePrimary
+                },
+                children = {
+                    {
+                        name = "CostPrediction",
+                        ref = "costPrediction",
+                        hidden = true,
+                        anchor = PandaUICore:anchor("RIGHT"),
+                        height = PandaUICore:pct(100),
+                        width = PandaUICore:val(50),
+                        backgroundColor = {r = 0, g = 0, b = 0, a = .5},
+                        events = {
+                            UNIT_SPELLCAST_START = StartPrediction,
+                            UNIT_SPELLCAST_STOP = EndPrediction,
+                            UNIT_SPELLCAST_FAILED = EndPrediction,
+                            UNIT_SPELLCAST_SUCCEEDED = EndPrediction
+                        }
+                    }
                 }
             })
         },
