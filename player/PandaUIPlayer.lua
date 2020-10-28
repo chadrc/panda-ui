@@ -242,30 +242,7 @@ function PandaUIPlayer:PlayerPowerFrame()
     local _, playerClass = UnitClass("player");
     self.spec = GetSpecialization();
     self.playerClass = playerClass;
-
     self.powerInfo = MakePowerInfo("MANA");
-
-    local CheckForStagger = function()
-        -- stagger is not considered a unit power
-        -- copying what FrameXML MonkStaggerBar does and update stagger display in update
-        -- register if Monk class and Brewmaster spec
-        -- else, unregister
-        if playerClass == "MONK" and self.spec == 1 then
-            self.root:SetScript("OnUpdate", function(self)
-                local max = UnitHealthMax("player");
-                local cur = UnitStagger("player");
-
-                local maxWidth = self.refs.secondaryPower:GetParent():GetWidth();
-                local newWidth = maxWidth * (cur / max);
-
-                self.refs.secondaryPower.details.width =
-                    PandaUICore:val(newWidth);
-                self.refs.secondaryPower:UpdateStyles();
-            end)
-        else
-            self.root:SetScript("OnUpdate", nil)
-        end
-    end
 
     local SecondaryPower = PowerUpdater(function()
         return self.powerInfo:GetSecondaryToken()
@@ -319,7 +296,29 @@ function PandaUIPlayer:PlayerPowerFrame()
         frame:UpdateStyles();
     end
 
-    -- CheckForStagger();
+    local function Init(frame)
+        local newSpec = GetSpecialization();
+        self.spec = newSpec;
+        self.powerInfo = GetPowerInfo(self.playerClass, newSpec);
+
+        local pClr = self.powerInfo.primary.color;
+        frame.refs.primaryPower.texture:SetColorTexture(pClr.r, pClr.g, pClr.b,
+                                                        pClr.a);
+
+        frame.refs.secondaryPower.details.hidden = not self.powerInfo.secondary;
+
+        local sClr = self.powerInfo:GetSecondaryColor();
+        if sClr then
+            frame.refs.secondaryPower.texture:SetColorTexture(sClr.r, sClr.g,
+                                                              sClr.b, sClr.a);
+        end
+
+        ForcePrimary(frame.refs.primaryPower);
+        ForceSecondary(frame.refs.secondaryPower);
+
+        frame:UpdateLayout();
+    end
+
     return {
         name = "Power",
         ref = "power",
@@ -330,7 +329,6 @@ function PandaUIPlayer:PlayerPowerFrame()
                 ref = "secondaryPower",
                 hidden = not self.powerInfo.secondary,
                 statusBar = {color = self.powerInfo:GetSecondaryColor()},
-                init = ForceSecondary,
                 events = {
                     UNIT_POWER_FREQUENT = SecondaryPower,
                     PLAYER_ENTERING_WORLD = ForceSecondary,
@@ -352,7 +350,6 @@ function PandaUIPlayer:PlayerPowerFrame()
                 ref = "primaryPower",
                 layout = {parts = 2},
                 statusBar = {color = self.powerInfo.primary.color},
-                init = ForcePrimary,
                 events = {
                     UNIT_POWER_FREQUENT = PrimaryPower,
                     PLAYER_ENTERING_WORLD = ForcePrimary,
@@ -378,36 +375,8 @@ function PandaUIPlayer:PlayerPowerFrame()
             })
         },
         events = {
-            PLAYER_ENTERING_WORLD = function(frame)
-                local _, playerClass = UnitClass("player");
-                self.spec = GetSpecialization();
-                self.playerClass = playerClass;
-                self.powerInfo = GetPowerInfo(playerClass, self.spec);
-            end,
-            ACTIVE_TALENT_GROUP_CHANGED = function(frame)
-                local newSpec = GetSpecialization();
-                self.spec = newSpec;
-                self.powerInfo = GetPowerInfo(playerClass, newSpec);
-
-                CheckForStagger();
-
-                local pClr = self.powerInfo.primary.color;
-                frame.refs.primaryPower.texture:SetColorTexture(pClr.r, pClr.g,
-                                                                pClr.b, pClr.a);
-
-                frame.refs.secondaryPower.details.hidden =
-                    not self.powerInfo.secondary;
-
-                local sClr = self.powerInfo:GetSecondaryColor();
-                if sClr then
-                    frame.refs.secondaryPower.texture:SetColorTexture(sClr.r,
-                                                                      sClr.g,
-                                                                      sClr.b,
-                                                                      sClr.a);
-                end
-
-                frame:UpdateLayout();
-            end
+            PLAYER_ENTERING_WORLD = Init,
+            ACTIVE_TALENT_GROUP_CHANGED = Init
         }
     }
 end
