@@ -404,106 +404,73 @@ function PandaUIPlayer:PlayerExpBar()
 end
 
 function PandaUIPlayer:PlayerCastingBar()
-    local function UpdateCast(frame)
-        local elapsed = GetTime() - (frame.startTime / 1000);
-        frame:SetValue(elapsed);
-    end
-
-    local function UpdateChannel(frame)
-        local elapsed = GetTime() - (frame.startTime / 1000);
-        frame:SetValue(frame.maxValue - elapsed);
+    local function UpdateCastBars(frame)
+        frame.refs.leftCast:SetMinMaxValues(0, frame.maxValue);
+        frame.refs.rightCast:SetMinMaxValues(0, frame.maxValue);
+        frame.refs.leftCast:SetValue(frame.value);
+        frame.refs.rightCast:SetValue(frame.value);
     end
 
     local function Update(frame)
-        if frame.casting then
-            UpdateCast(frame);
-        elseif frame.channeling then
-            UpdateChannel(frame);
-        end
+        if not frame.casting then return end
+
+        frame.value = GetTime() - (frame.startTime / 1000);
+        UpdateCastBars(frame);
     end
 
     local function EndCast(frame, unit)
         if unit ~= "player" then return end
         frame.casting = false;
-        frame.channeling = false;
-        frame:SetMinMaxValues(0, 1);
-        frame:SetValue(0);
+        frame.maxValue = 1;
+        frame.value = 0;
+        UpdateCastBars(frame);
+    end
+
+    local function InitCastbars(frame, unit, infoFunc)
+        if unit ~= "player" then return end
+        local name, text, texture, startTime, endTime, isTradeSkill, castID,
+              notInterruptible = infoFunc("player");
+
+        frame.casting = true;
+        frame.startTime = startTime;
+        frame.maxValue = (endTime - startTime) / 1000;
+        Update(frame)
+    end
+
+    local InitCast = function(frame, unit)
+        InitCastbars(frame, unit, UnitCastingInfo);
+    end
+
+    local InitChannel = function(frame, unit)
+        InitCastbars(frame, unit, UnitChannelInfo);
     end
 
     return {
         name = "CastingBar",
+        init = function(frame)
+            frame:SetScript("OnUpdate", function(frame)
+                Update(frame);
+            end)
+        end,
+        childLayout = {direction = "horizontal"},
         children = {
             PandaUICore:StatusBar({
-                statusBar = {color = {r = 0, g = .8, b = .8}},
-                init = function(frame)
-                    frame:SetMinMaxValues(0, 1);
-                    frame:SetValue(0);
-
-                    frame:SetScript("OnUpdate", function(frame, elapsed)
-                        Update(frame, elapsed);
-                    end)
-                end,
-                events = {
-                    UNIT_SPELLCAST_START = function(frame, unit)
-                        if unit ~= "player" then return end
-                        local name, text, texture, startTime, endTime,
-                              isTradeSkill, castID, notInterruptible =
-                            UnitCastingInfo("player");
-
-                        frame.casting = true;
-                        frame.channeling = false;
-                        frame.startTime = startTime;
-                        frame.value = (GetTime() - (startTime / 1000));
-                        frame.maxValue = (endTime - startTime) / 1000;
-                        frame:SetMinMaxValues(0, frame.maxValue);
-                        frame:SetValue(frame.value);
-                    end,
-                    UNIT_SPELLCAST_DELAYED = function(frame, unit)
-                        if unit ~= "player" then return end
-                        local name, text, texture, startTime, endTime,
-                              isTradeSkill, castID, notInterruptible =
-                            UnitCastingInfo("player");
-
-                        frame.startTime = startTime;
-                        frame.value = (GetTime() - (startTime / 1000));
-                        frame.maxValue = (endTime - startTime) / 1000;
-                        frame:SetMinMaxValues(0, frame.maxValue);
-                        frame:SetValue(frame.value);
-                    end,
-                    UNIT_SPELLCAST_STOP = EndCast,
-                    UNIT_SPELLCAST_FAILED = EndCast,
-                    UNIT_SPELLCAST_INTERRUPTED = EndCast,
-                    UNIT_SPELLCAST_CHANNEL_START = function(frame, unit)
-                        if unit ~= "player" then return end
-
-                        local name, text, texture, startTime, endTime,
-                              isTradeSkill, notInterruptible, spellID =
-                            UnitChannelInfo("player");
-
-                        frame.startTime = startTime;
-                        frame.channeling = true;
-                        frame.casting = false;
-                        frame.value = (endTime / 1000) - GetTime();
-                        frame.maxValue = (endTime - startTime) / 1000;
-                        frame:SetMinMaxValues(0, frame.maxValue);
-                        frame:SetValue(frame.value);
-                    end,
-                    UNIT_SPELLCAST_CHANNEL_UPDATE = function(frame, unit)
-                        if unit ~= "player" then return end
-
-                        local name, text, texture, startTime, endTime,
-                              isTradeSkill, notInterruptible, spellID =
-                            UnitChannelInfo("player");
-
-                        frame.startTime = startTime;
-                        frame.value = (endTime / 1000) - GetTime();
-                        frame.maxValue = (endTime - startTime) / 1000;
-                        frame:SetMinMaxValues(0, frame.maxValue);
-                        frame:SetValue(frame.value);
-                    end,
-                    UNIT_SPELLCAST_CHANNEL_STOP = EndCast
-                }
+                ref = "leftCast",
+                statusBar = {color = {r = 0, g = .8, b = .8}}
+            }), PandaUICore:StatusBar({
+                ref = "rightCast",
+                statusBar = {color = {r = 0, g = .8, b = .8}, reverse = true}
             })
+        },
+        events = {
+            UNIT_SPELLCAST_START = InitCast,
+            UNIT_SPELLCAST_DELAYED = InitCast,
+            UNIT_SPELLCAST_STOP = EndCast,
+            UNIT_SPELLCAST_FAILED = EndCast,
+            UNIT_SPELLCAST_INTERRUPTED = EndCast,
+            UNIT_SPELLCAST_CHANNEL_START = InitChannel,
+            UNIT_SPELLCAST_CHANNEL_UPDATE = InitChannel,
+            UNIT_SPELLCAST_CHANNEL_STOP = EndCast
         }
     }
 end

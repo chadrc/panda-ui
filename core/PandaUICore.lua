@@ -289,6 +289,10 @@ function PandaUICore:StatusBar(details)
         texture:SetColorTexture(clr.r, clr.g, clr.b, clr.a);
         frame.texture = texture;
         frame:SetStatusBarTexture(texture);
+        frame:SetMinMaxValues(0, 1);
+        frame:SetValue(0);
+        frame:SetReverseFill(statusDetails.reverse or false);
+        print("revers frame ", d.name, " ", statusDetails.reverse);
         if orgInit then orgInit(frame); end
     end
 
