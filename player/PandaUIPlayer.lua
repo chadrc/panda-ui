@@ -108,6 +108,10 @@ function PandaUIPlayer:PlayerHealthFrame()
                         end
                     end,
                     PLAYER_ENTERING_WORLD = Update
+                },
+                children = {
+                    {name = "AbsorbPrediction", ref = "absorbPrediction"},
+                    {name = "HealPrediction", ref = "healPrediction"}
                 }
             })
         }
@@ -220,7 +224,6 @@ function PandaUIPlayer:PlayerPowerFrame()
 
     local function EndPrediction(frame, unit)
         if unit ~= "player" then return end
-        print("end prediction")
 
         frame.predictedPowerCost = nil;
         frame.details.width = PandaUICore:val(0);
