@@ -97,7 +97,7 @@ end
 local function ExtractValue(info, parentValue)
     if info then
         if info.type == "percentage" then
-            return parentValue * (info.value / 100);
+            return parentValue * info.value;
         else
             return info.value
         end
@@ -190,6 +190,7 @@ function PandaUICore:CreateFrame(name, details, children)
         if height == 0 then height = 0.000001; end
 
         self:SetSize(width, height);
+        self:ClearAllPoints();
         self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
                       anchor.offsetY);
     end
