@@ -1,4 +1,10 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\..\FrameXML\UI.xsd">
+
     <Script file="player/PandaUIPlayer.lua"/>
+    <Script file="player/PandaUIPlayerCast.lua"/>
+    <Script file="player/PandaUIPlayerExp.lua"/>
+    <Script file="player/PandaUIPlayerHealth.lua"/>
+    <Script file="player/PandaUIPlayerPower.lua"/>
+    <Script file="player/PandaUIPlayerInit.lua"/>
 </Ui>
