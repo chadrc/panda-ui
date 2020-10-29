@@ -3,6 +3,6 @@
 ## Author: YulePanda
 ## Version: 0.1
 
-core/PandaUICore.lua
+core/PandaUICore.xml
 player/PandaUIPlayer.xml
 PandaUIMainFrame.xml

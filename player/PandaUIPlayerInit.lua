@@ -4,7 +4,7 @@ function PandaUIPlayer:Initialize()
         -- for debuggging, remove for live
         backgroundColor = {r = .7, g = 0, b = 0, a = .2}
     }, {
-        {
+        self:PlayerBuffs(), {
             name = "PlayerInfo",
             height = PandaUICore:val(150),
             childLayout = {direction = "vertical"},
