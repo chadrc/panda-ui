@@ -51,6 +51,55 @@ function FrameMixin:UpdateStyles()
                   anchor.offsetY);
 end
 
+local function LayoutChildGrid(self)
+    local rows = self.details.childLayout.rows;
+    local columns = math.floor(table.getn(self.childFrames) / rows);
+    local cellWidth = self.details.childLayout.cellWidth;
+    local cellHeight = self.details.childLayout.cellHeight;
+
+    local totalHeight = cellWidth * rows;
+    local totalWidth = cellHeight * columns;
+
+    self.details.height = PandaUICore:val(totalHeight);
+    self.details.width = PandaUICore:val(totalWidth);
+
+    self:UpdateStyles(); -- may need to remove if parent ever controls size
+
+    local start = self.details.childLayout.start or "BOTTOMLEFT";
+    local xFactor = 1;
+    local yFactor = 1;
+    local offX = 0;
+    local offY = 0;
+
+    if start == "BOTTOMRIGHT" then
+        xFactor = -1;
+        offX = cellWidth * (columns - 1);
+    elseif start == "TOPLEFT" then
+        yFactor = -1;
+        offY = cellHeight * (rows - 1);
+    elseif start == "TOPRIGHT" then
+        xFactor = -1;
+        yFactor = -1;
+        offX = cellWidth * (columns - 1);
+        offY = cellHeight * (rows - 1);
+    end
+
+    for i, child in pairs(self.childFrames) do
+        child.details.width = PandaUICore:val(cellWidth);
+        child.details.height = PandaUICore:val(cellHeight);
+
+        local index = i - 1;
+        local offsetX = math.floor(index / rows) * cellWidth * xFactor;
+        local offsetY = (index % rows) * cellHeight * yFactor;
+
+        child.details.anchor = PandaUICore:anchor("BOTTOMLEFT", "BOTTOMLEFT",
+                                                  offsetX + offX, offsetY + offY);
+
+        child:UpdateStyles();
+        child:UpdateLayout();
+    end
+end
+
 function FrameMixin:UpdateLayout()
     local totalParts = 0;
     local childLayout = self.details.childLayout or {};
@@ -72,42 +121,46 @@ function FrameMixin:UpdateLayout()
         if not child.hidden then totalParts = totalParts + childParts; end
     end
 
-    local currentChildOffsetX = 0;
-    local currentChildOffsetY = 0;
-    for i, child in pairs(self.childFrames) do
-        -- layout children according to options
-        if childLayout.direction == "horizontal" then
-            -- horizontal children have same height as parent
-            -- calculate width based on parts
-            child.details.height = PandaUICore:val(self:GetHeight());
+    if childLayout.type == "grid" then
+        LayoutChildGrid(self);
+    else
+        local currentChildOffsetX = 0;
+        local currentChildOffsetY = 0;
+        for i, child in pairs(self.childFrames) do
+            -- layout children according to options
+            if childLayout.direction == "horizontal" then
+                -- horizontal children have same height as parent
+                -- calculate width based on parts
+                child.details.height = PandaUICore:val(self:GetHeight());
 
-            local childWidth = self:GetWidth() *
-                                   (child.details.layout.parts / totalParts);
-            child.details.width = PandaUICore:val(childWidth);
-            child.details.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
-                                                      currentChildOffsetX, 0);
+                local childWidth = self:GetWidth() *
+                                       (child.details.layout.parts / totalParts);
+                child.details.width = PandaUICore:val(childWidth);
+                child.details.anchor = PandaUICore:anchor("BOTTOMLEFT", nil,
+                                                          currentChildOffsetX, 0);
 
-            if not child.details.hidden then
-                currentChildOffsetX = currentChildOffsetX + childWidth;
+                if not child.details.hidden then
+                    currentChildOffsetX = currentChildOffsetX + childWidth;
+                end
+            elseif childLayout.direction == "vertical" then
+                -- vertical children have same width as parent
+                -- calculate height based on parts
+                child.details.width = PandaUICore:val(self:GetWidth());
+
+                local childHeight = self:GetHeight() *
+                                        (child.details.layout.parts / totalParts);
+                child.details.height = PandaUICore:val(childHeight);
+                child.details.anchor = PandaUICore:anchor("TOPLEFT", nil, 0,
+                                                          -currentChildOffsetY);
+
+                if not child.details.hidden then
+                    currentChildOffsetY = currentChildOffsetY + childHeight;
+                end
             end
-        elseif childLayout.direction == "vertical" then
-            -- vertical children have same width as parent
-            -- calculate height based on parts
-            child.details.width = PandaUICore:val(self:GetWidth());
 
-            local childHeight = self:GetHeight() *
-                                    (child.details.layout.parts / totalParts);
-            child.details.height = PandaUICore:val(childHeight);
-            child.details.anchor = PandaUICore:anchor("TOPLEFT", nil, 0,
-                                                      -currentChildOffsetY);
-
-            if not child.details.hidden then
-                currentChildOffsetY = currentChildOffsetY + childHeight;
-            end
+            child:UpdateStyles();
+            child:UpdateLayout();
         end
-
-        child:UpdateStyles();
-        child:UpdateLayout();
     end
 end
 

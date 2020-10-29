@@ -5,7 +5,7 @@ function PandaUIPlayer:PlayerBuffs()
             name = "Buff" .. i,
             height = PandaUICore:val(40),
             width = PandaUICore:val(40),
-            backgroundColor = {r = 0, g = 0, b = 0}
+            backgroundColor = {r = 0.02 * i, g = 0, b = 0}
         })
     end
 
@@ -16,8 +16,13 @@ function PandaUIPlayer:PlayerBuffs()
         height = PandaUICore:val(150),
         width = PandaUICore:pct(1),
         backgroundColor = {r = 0, g = .5, b = .5},
-        childLayout = {type = "grid", rows = 4, cellWidth = 40, cellHeight = 40}
-
+        childLayout = {
+            type = "grid",
+            rows = 4,
+            cellWidth = 40,
+            cellHeight = 40,
+            start = "TOPRIGHT"
+        }
     };
     return buffInfo;
 end
