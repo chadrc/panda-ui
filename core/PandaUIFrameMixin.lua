@@ -63,25 +63,17 @@ local function LayoutChildGrid(self)
     self.details.height = PandaUICore:val(totalHeight);
     self.details.width = PandaUICore:val(totalWidth);
 
-    self:UpdateStyles(); -- may need to remove if parent ever controls size
-
     local start = self.details.childLayout.start or "BOTTOMLEFT";
     local xFactor = 1;
     local yFactor = 1;
-    local offX = 0;
-    local offY = 0;
 
     if start == "BOTTOMRIGHT" then
         xFactor = -1;
-        offX = cellWidth * (columns - 1);
     elseif start == "TOPLEFT" then
         yFactor = -1;
-        offY = cellHeight * (rows - 1);
     elseif start == "TOPRIGHT" then
         xFactor = -1;
         yFactor = -1;
-        offX = cellWidth * (columns - 1);
-        offY = cellHeight * (rows - 1);
     end
 
     for i, child in pairs(self.childFrames) do
@@ -92,8 +84,8 @@ local function LayoutChildGrid(self)
         local offsetX = math.floor(index / rows) * cellWidth * xFactor;
         local offsetY = (index % rows) * cellHeight * yFactor;
 
-        child.details.anchor = PandaUICore:anchor("BOTTOMLEFT", "BOTTOMLEFT",
-                                                  offsetX + offX, offsetY + offY);
+        child.details.anchor =
+            PandaUICore:anchor(start, start, offsetX, offsetY);
 
         child:UpdateStyles();
         child:UpdateLayout();
@@ -161,6 +153,10 @@ function FrameMixin:UpdateLayout()
             child:UpdateStyles();
             child:UpdateLayout();
         end
+    end
+
+    if self.layout and self.layout.type == "fit" then
+        -- local totalWidth = 
     end
 end
 
