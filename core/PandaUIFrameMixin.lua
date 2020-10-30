@@ -56,6 +56,7 @@ local function LayoutChildGrid(self)
     local columns = math.floor(table.getn(self.childFrames) / rows);
     local cellWidth = self.details.childLayout.cellWidth;
     local cellHeight = self.details.childLayout.cellHeight;
+    local cellPadding = self.details.childLayout.cellPadding or 0;
 
     local totalHeight = cellWidth * rows;
     local totalWidth = cellHeight * columns;
@@ -81,8 +82,10 @@ local function LayoutChildGrid(self)
         child.details.height = PandaUICore:val(cellHeight);
 
         local index = i - 1;
-        local offsetX = math.floor(index / rows) * cellWidth * xFactor;
-        local offsetY = (index % rows) * cellHeight * yFactor;
+        local col = math.floor(index / rows);
+        local row = index % rows;
+        local offsetX = (col * cellWidth + (cellPadding * col)) * xFactor;
+        local offsetY = (row * cellHeight + (cellPadding * row)) * yFactor;
 
         child.details.anchor =
             PandaUICore:anchor(start, start, offsetX, offsetY);

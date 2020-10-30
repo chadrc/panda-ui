@@ -1,5 +1,6 @@
 local CellWidth = 40;
 local CellHeight = 40;
+local CellPadding = 5;
 local Rows = 4;
 
 local function MakeGrid(name, count, anchor)
@@ -24,13 +25,16 @@ local function MakeGrid(name, count, anchor)
             rows = Rows,
             cellWidth = CellWidth,
             cellHeight = CellHeight,
+            cellPadding = CellPadding,
             start = anchor
         }
     };
     return grid;
 end
 
-function PandaUIPlayer:BuffsHeight() return CellHeight * Rows; end
+function PandaUIPlayer:BuffsHeight()
+    return CellHeight * Rows + (CellPadding * (Rows - 1));
+end
 
 function PandaUIPlayer:PlayerBuffs()
     return MakeGrid("Buffs", BUFF_MAX_DISPLAY, "TOPRIGHT");
