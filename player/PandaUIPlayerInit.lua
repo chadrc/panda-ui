@@ -1,8 +1,8 @@
 function PandaUIPlayer:Initialize()
     self.root = PandaUICore:CreateFrame("PlayerBars", {
-        height = PandaUICore:val(150 + self:BuffsHeight()),
+        height = PandaUICore:val(150 + self:BuffsHeight())
         -- for debuggging, remove for live
-        backgroundColor = {r = .7, g = 0, b = 0, a = .2}
+        -- backgroundColor = {r = .7, g = 0, b = 0, a = .2}
     }, {
         {
             name = "TopBar",

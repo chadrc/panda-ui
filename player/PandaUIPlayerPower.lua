@@ -59,6 +59,11 @@ local classPowers = {
         MakePowerInfo("MANA", "ARCANE_CHARGES"), -- Arcane
         MakePowerInfo("MANA"), -- Fire
         MakePowerInfo("MANA") -- Frost
+    },
+    WARRIOR = {
+        MakePowerInfo("RAGE"), -- Arms
+        MakePowerInfo("RAGE"), -- Fury
+        MakePowerInfo("RAGE") -- Protection
     }
 }
 
