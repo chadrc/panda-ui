@@ -1,10 +1,18 @@
 function PandaUIPlayer:Initialize()
     self.root = PandaUICore:CreateFrame("PlayerBars", {
-        height = PandaUICore:val(300),
+        height = PandaUICore:val(150 + self:BuffsHeight()),
         -- for debuggging, remove for live
         backgroundColor = {r = .7, g = 0, b = 0, a = .2}
     }, {
-        self:PlayerBuffs(), {
+        {
+            name = "TopBar",
+            height = PandaUICore:val(self:BuffsHeight()),
+            anchor = PandaUICore:anchor("TOPLEFT"),
+            childLayout = {direction = "horizontal"},
+            children = {
+                self:PlayerBuffs(), {name = "Actions"}, self:PlayerDebuffs()
+            }
+        }, {
             name = "PlayerInfo",
             height = PandaUICore:val(150),
             childLayout = {direction = "vertical"},

@@ -154,10 +154,6 @@ function FrameMixin:UpdateLayout()
             child:UpdateLayout();
         end
     end
-
-    if self.layout and self.layout.type == "fit" then
-        -- local totalWidth = 
-    end
 end
 
 function PandaUICore:ApplyFrameMixin(to)
