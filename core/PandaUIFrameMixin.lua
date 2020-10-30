@@ -84,8 +84,8 @@ local function LayoutChildGrid(self)
         local index = i - 1;
         local col = math.floor(index / rows);
         local row = index % rows;
-        local offsetX = (col * cellWidth + (cellPadding * col)) * xFactor;
-        local offsetY = (row * cellHeight + (cellPadding * row)) * yFactor;
+        local offsetX = col * (cellWidth + cellPadding) * xFactor;
+        local offsetY = row * (cellHeight + cellPadding) * yFactor;
 
         child.details.anchor =
             PandaUICore:anchor(start, start, offsetX, offsetY);
