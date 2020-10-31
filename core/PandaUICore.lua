@@ -126,6 +126,9 @@ function PandaUICore:CreateFrame(name, details, children)
     end
     frame.childFrames = childFrames;
 
+    frame:SetScript("OnEnter", d.onEnter);
+    frame:SetScript("OnLeave", d.onLeave);
+
     local eventCount = 0;
     for name, _ in pairs(d.events or {}) do
         frame:RegisterEvent(name);

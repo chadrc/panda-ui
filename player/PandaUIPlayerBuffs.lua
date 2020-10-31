@@ -21,10 +21,9 @@ local function UpdateAura(frame)
 
     frame.refs.timeText.details.text.text = math.ceil(remaining) .. suffix;
     frame.refs.timeText:UpdateStyles();
-    -- frame.refs.timeText.text:SetText(math.ceil(remaining) .. suffix);
 end
 
-local function MakeGrid(name, maxCount, anchor, filter)
+local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
     local items = {};
     for i = 1, maxCount do
         table.insert(items, {
@@ -67,7 +66,14 @@ local function MakeGrid(name, maxCount, anchor, filter)
                         font = "GameFontNormalSmall"
                     }
                 }
-            }
+            },
+            onEnter = function(frame)
+                GameTooltip:SetOwner(frame, tooltipAnchor);
+                GameTooltip:SetFrameLevel(frame:GetFrameLevel() + 2);
+                GameTooltip:SetUnitAura("player", frame.auraIndex, filter);
+                GameTooltip:Show();
+            end,
+            onLeave = function(frame) GameTooltip:Hide(); end
         })
     end
 
@@ -79,6 +85,7 @@ local function MakeGrid(name, maxCount, anchor, filter)
             local buffFrame = frame.childFrames[index];
             buffFrame.expirationTime = expirationTime;
             buffFrame.details.hidden = false;
+            buffFrame.auraIndex = index;
 
             buffFrame.refs.textureFrame.texture:SetTexture(buffTexture);
 
@@ -117,7 +124,7 @@ local function MakeGrid(name, maxCount, anchor, filter)
         anchor = PandaUICore:anchor(anchor),
         children = items,
         layout = {parts = 5},
-        backgroundColor = {r = 0, g = .5, b = .5},
+        -- backgroundColor = {r = 0, g = .5, b = .5},
         childLayout = {
             type = "grid",
             rows = Rows,
@@ -143,9 +150,11 @@ function PandaUIPlayer:BuffsHeight()
 end
 
 function PandaUIPlayer:PlayerBuffs()
-    return MakeGrid("Buffs", BUFF_MAX_DISPLAY, "TOPRIGHT", "HELPFUL");
+    return MakeGrid("Buffs", BUFF_MAX_DISPLAY, "TOPRIGHT", "HELPFUL",
+                    "ANCHOR_TOPRIGHT");
 end
 
 function PandaUIPlayer:PlayerDebuffs()
-    return MakeGrid("Debuggs", DEBUFF_MAX_DISPLAY, "TOPLEFT", "HARMFUL");
+    return MakeGrid("Debuggs", DEBUFF_MAX_DISPLAY, "TOPLEFT", "HARMFUL",
+                    "ANCHOR_TOPLEFT");
 end
