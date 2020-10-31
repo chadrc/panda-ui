@@ -23,6 +23,7 @@ local framesToHide = {
 }
 
 function PandaUICore:ToggleUI()
+    if InCombatLockdown() then return end
     if self.showingBlizzardUI then
         self:HideBlizzardUI();
         self:ShowPandaUI();
@@ -37,6 +38,7 @@ function PandaUICore:HidePandaUI() self.rootFrame:Hide(); end
 function PandaUICore:ShowPandaUI() self.rootFrame:Show(); end
 
 function PandaUICore:TogglePandaUI()
+    if InCombatLockdown() then return end
     if self.rootFrame:IsShown() then
         PandaUICore:HidePandaUI();
     else
@@ -128,6 +130,9 @@ function PandaUICore:CreateFrame(name, details, children)
 
     frame:SetScript("OnEnter", d.onEnter);
     frame:SetScript("OnLeave", d.onLeave);
+
+    if d.clicks then frame:RegisterForClicks(unpack(d.clicks)); end
+    if t == "Button" then frame:SetScript("OnClick", d.onClick); end
 
     local eventCount = 0;
     for name, _ in pairs(d.events or {}) do

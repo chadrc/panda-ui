@@ -27,6 +27,7 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
     local items = {};
     for i = 1, maxCount do
         table.insert(items, {
+            type = "Button",
             name = name .. i,
             height = PandaUICore:val(CellHeight),
             width = PandaUICore:val(CellWidth),
@@ -73,7 +74,12 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
                 GameTooltip:SetUnitAura("player", frame.auraIndex, filter);
                 GameTooltip:Show();
             end,
-            onLeave = function(frame) GameTooltip:Hide(); end
+            onLeave = function(frame) GameTooltip:Hide(); end,
+            clicks = {"RightButtonUp"},
+            onClick = function(frame, button)
+                if InCombatLockdown() then return end
+                CancelUnitBuff("player", frame.auraIndex, filter);
+            end
         })
     end
 
