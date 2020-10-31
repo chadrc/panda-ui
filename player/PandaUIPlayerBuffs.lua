@@ -85,33 +85,20 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
 
     local function Update(frame)
         local index = 1;
+        local auraInfos = {};
         AuraUtil.ForEachAura("player", filter, maxCount, function(...)
             local name, buffTexture, count, debuffType, duration,
                   expirationTime, _, _, _, _, _, _, _, _, timeMod = ...;
-            local buffFrame = frame.childFrames[index];
-            buffFrame.expirationTime = expirationTime;
-            buffFrame.details.hidden = false;
-            buffFrame.auraIndex = index;
 
-            buffFrame.refs.textureFrame.texture:SetTexture(buffTexture);
-
-            local timeText = buffFrame.refs.timeText.details.text;
-            local stackText = buffFrame.refs.stackText.details.text;
-
-            if duration > 0 and expirationTime then
-                timeText.hidden = false;
-                buffFrame:SetScript("OnUpdate", UpdateAura);
-                UpdateAura(buffFrame)
-            else
-                timeText.hidden = true;
-            end
-
-            stackText.hidden = not count or count == 0;
-            stackText.text = count or "";
-
-            buffFrame.refs.timeText:UpdateStyles();
-            buffFrame.refs.stackText:UpdateStyles();
-            buffFrame:UpdateStyles();
+            table.insert(auraInfos, {
+                name = name,
+                texture = buffTexture,
+                count = count,
+                debuffType = debuffType,
+                duration = duration,
+                expirationTime = expirationTime,
+                timeMod = timeMod
+            });
 
             index = index + 1;
             return index > maxCount;
@@ -122,6 +109,42 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
             frame.childFrames[i].details.hidden = true;
             frame.childFrames[i]:UpdateStyles();
             frame.childFrames[i]:SetScript("OnUpdate", nil);
+        end
+
+        table.sort(auraInfos, function(left, right)
+            if left.duration == 0 then
+                return false;
+            elseif right.duration == 0 then
+                return true;
+            end
+            return left.duration < right.duration;
+        end)
+
+        for i, aura in ipairs(auraInfos) do
+            local buffFrame = frame.childFrames[i];
+            buffFrame.expirationTime = aura.expirationTime;
+            buffFrame.details.hidden = false;
+            buffFrame.auraIndex = i;
+
+            buffFrame.refs.textureFrame.texture:SetTexture(aura.texture);
+
+            local timeText = buffFrame.refs.timeText.details.text;
+            local stackText = buffFrame.refs.stackText.details.text;
+
+            if aura.duration > 0 and aura.expirationTime then
+                timeText.hidden = false;
+                buffFrame:SetScript("OnUpdate", UpdateAura);
+                UpdateAura(buffFrame)
+            else
+                timeText.hidden = true;
+            end
+
+            stackText.hidden = not aura.count or aura.count == 0;
+            stackText.text = aura.count or "";
+
+            buffFrame.refs.timeText:UpdateStyles();
+            buffFrame.refs.stackText:UpdateStyles();
+            buffFrame:UpdateStyles();
         end
     end
 
