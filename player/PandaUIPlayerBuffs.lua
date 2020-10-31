@@ -6,6 +6,35 @@ local Rows = 4;
 local CellWidth = IconWidth;
 local CellHeight = IconHeight + TextHeight;
 
+local function MakeFillOrder(maxCount)
+    local order = {};
+    local next = {1};
+    local visited = {};
+    local c = 0; -- to prevent infinite iteration
+
+    while table.getn(next) > 0 do
+        local n = next[1];
+        table.insert(order, n);
+        table.remove(next, 1);
+
+        if n + Rows <= maxCount and not visited[(n + Rows) .. ""] then
+            table.insert(next, n + Rows);
+            visited[(n + Rows) .. ""] = true;
+        end
+
+        if n + 1 <= maxCount and not visited[(n + 1) .. ""] then
+            table.insert(next, n + 1);
+            visited[(n + 1) .. ""] = true;
+        end
+
+        -- safty check
+        c = c + 1;
+        if c > maxCount then break end
+    end
+
+    return order;
+end
+
 local function UpdateAura(frame)
     if not frame.expirationTime or frame.expirationTime == 0 then return end
 
@@ -83,6 +112,9 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
         })
     end
 
+    -- Pre calculate fill order
+    local fillOrder = MakeFillOrder(maxCount);
+
     local function Update(frame)
         local index = 1;
         local auraInfos = {};
@@ -92,6 +124,7 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
 
             table.insert(auraInfos, {
                 name = name,
+                id = index,
                 texture = buffTexture,
                 count = count,
                 debuffType = debuffType,
@@ -106,9 +139,10 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
 
         -- hide remaining frames
         for i = index, maxCount do
-            frame.childFrames[i].details.hidden = true;
-            frame.childFrames[i]:UpdateStyles();
-            frame.childFrames[i]:SetScript("OnUpdate", nil);
+            local frameIndex = fillOrder[i];
+            frame.childFrames[frameIndex].details.hidden = true;
+            frame.childFrames[frameIndex]:UpdateStyles();
+            frame.childFrames[frameIndex]:SetScript("OnUpdate", nil);
         end
 
         table.sort(auraInfos, function(left, right)
@@ -117,14 +151,15 @@ local function MakeGrid(name, maxCount, anchor, filter, tooltipAnchor)
             elseif right.duration == 0 then
                 return true;
             end
-            return left.duration < right.duration;
+            return left.expirationTime < right.expirationTime;
         end)
 
         for i, aura in ipairs(auraInfos) do
-            local buffFrame = frame.childFrames[i];
+            local frameIndex = fillOrder[i];
+            local buffFrame = frame.childFrames[frameIndex];
             buffFrame.expirationTime = aura.expirationTime;
             buffFrame.details.hidden = false;
-            buffFrame.auraIndex = i;
+            buffFrame.auraIndex = aura.id;
 
             buffFrame.refs.textureFrame.texture:SetTexture(aura.texture);
 
