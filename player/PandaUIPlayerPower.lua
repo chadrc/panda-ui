@@ -179,15 +179,17 @@ function PandaUIPlayer:PlayerPowerFrame()
         self.powerInfo = GetPowerInfo(self.playerClass, newSpec);
 
         local pClr = self.powerInfo.primary.color;
-        frame.refs.primaryPower.texture:SetColorTexture(pClr.r, pClr.g, pClr.b,
-                                                        pClr.a);
+        frame.refs.primaryPower.statusBarTexture:SetColorTexture(pClr.r, pClr.g,
+                                                                 pClr.b, pClr.a);
 
         frame.refs.secondaryPower.details.hidden = not self.powerInfo.secondary;
 
         local sClr = self.powerInfo:GetSecondaryColor();
         if sClr then
-            frame.refs.secondaryPower.texture:SetColorTexture(sClr.r, sClr.g,
-                                                              sClr.b, sClr.a);
+            frame.refs.secondaryPower.statusBarTexture:SetColorTexture(sClr.r,
+                                                                       sClr.g,
+                                                                       sClr.b,
+                                                                       sClr.a);
         end
 
         ForcePrimary(frame.refs.primaryPower);

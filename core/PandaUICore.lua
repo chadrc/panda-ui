@@ -155,6 +155,7 @@ function PandaUICore:anchor(base, relative, offsetX, offsetY)
         offsetY = offsetY or 0
     }
 end
+function PandaUICore:auto() return {type = "auto"}; end
 function PandaUICore:val(v) return {type = "value", value = v}; end
 function PandaUICore:pct(p) return {type = "percentage", value = p}; end
 
@@ -172,7 +173,7 @@ function PandaUICore:StatusBar(details)
         local texture = frame:CreateTexture(frame:GetName() .. "Texture");
         texture:SetTexture("Interface\\Buttons\\WHITE8X8");
         texture:SetColorTexture(clr.r, clr.g, clr.b, clr.a);
-        frame.texture = texture;
+        frame.statusBarTexture = texture;
         frame:SetStatusBarTexture(texture);
         frame:SetMinMaxValues(0, 1);
         frame:SetValue(0);

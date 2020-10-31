@@ -19,7 +19,9 @@ local function UpdateAura(frame)
         suffix = ' m';
     end
 
-    frame.refs.timeText.text:SetText(math.ceil(remaining) .. suffix);
+    frame.refs.timeText.details.text.text = math.ceil(remaining) .. suffix;
+    frame.refs.timeText:UpdateStyles();
+    -- frame.refs.timeText.text:SetText(math.ceil(remaining) .. suffix);
 end
 
 local function MakeGrid(name, maxCount, anchor, filter)
@@ -33,17 +35,24 @@ local function MakeGrid(name, maxCount, anchor, filter)
             children = {
                 {
                     name = "TextureFrame",
-                    ref = "texture",
+                    ref = "textureFrame",
                     height = PandaUICore:val(IconHeight),
                     width = PandaUICore:pct(1),
                     anchor = PandaUICore:anchor("TOP"),
+                    texture = {anchor = PandaUICore:anchor("CENTER")},
                     children = {
                         {
                             name = "StackText",
                             ref = "stackText",
                             height = PandaUICore:val(TextHeight),
                             width = PandaUICore:pct(1),
-                            anchor = PandaUICore:anchor("BOTTOMRIGHT")
+                            anchor = PandaUICore:anchor("BOTTOMRIGHT"),
+                            text = {
+                                anchor = PandaUICore:anchor("BOTTOMRIGHT",
+                                                            "BOTTOMRIGHT", -2, 2),
+                                hidden = true,
+                                font = "NumberFontNormal"
+                            }
                         }
                     }
                 }, {
@@ -51,7 +60,12 @@ local function MakeGrid(name, maxCount, anchor, filter)
                     ref = "timeText",
                     height = PandaUICore:val(TextHeight),
                     width = PandaUICore:pct(1),
-                    anchor = PandaUICore:anchor("BOTTOM")
+                    anchor = PandaUICore:anchor("BOTTOM"),
+                    text = {
+                        anchor = PandaUICore:anchor("CENTER"),
+                        hidden = true,
+                        font = "GameFontNormalSmall"
+                    }
                 }
             }
         })
@@ -66,57 +80,24 @@ local function MakeGrid(name, maxCount, anchor, filter)
             buffFrame.expirationTime = expirationTime;
             buffFrame.details.hidden = false;
 
-            local textureFrame = buffFrame.refs.texture;
-            local texture = textureFrame.texture;
-            if not texture then
-                texture = textureFrame:CreateTexture(
-                              textureFrame:GetName() .. "Texture");
-                textureFrame.texture = texture;
-            end
+            buffFrame.refs.textureFrame.texture:SetTexture(buffTexture);
 
-            local textFrame = buffFrame.refs.timeText;
-            local text = textFrame.text;
-            if not text then
-                text = textFrame:CreateFontString(textFrame:GetName() .. "Text",
-                                                  "OVERLAY",
-                                                  "GameFontNormalSmall")
-                textFrame.text = text;
-            end
-
-            local stackTextFrame = buffFrame.refs.stackText;
-            local stackText = stackTextFrame.text;
-            if not stackText then
-                stackText = stackTextFrame:CreateFontString(
-                                stackTextFrame:GetName() .. "Text", "OVERLAY",
-                                "NumberFontNormal");
-                stackTextFrame.text = stackText;
-            end
-
-            texture:SetTexture(buffTexture);
-            texture:SetSize(textureFrame:GetWidth(), textureFrame:GetHeight());
-            texture:SetPoint("CENTER");
-
-            text:SetPoint("CENTER");
+            local timeText = buffFrame.refs.timeText.details.text;
+            local stackText = buffFrame.refs.stackText.details.text;
 
             if duration > 0 and expirationTime then
-                text:Show();
+                timeText.hidden = false;
                 buffFrame:SetScript("OnUpdate", UpdateAura);
                 UpdateAura(buffFrame)
             else
-                text:Hide();
+                timeText.hidden = true;
             end
 
-            stackText:SetPoint("BOTTOMRIGHT", -2, 2);
+            stackText.hidden = not count or count == 0;
+            stackText.text = count or "";
 
-            if not count or count == 0 then
-                stackText:Hide();
-            else
-                stackText:Show();
-                stackText:SetText(count);
-            end
-
-            textureFrame:UpdateStyles();
-            textFrame:UpdateStyles();
+            buffFrame.refs.timeText:UpdateStyles();
+            buffFrame.refs.stackText:UpdateStyles();
             buffFrame:UpdateStyles();
 
             index = index + 1;

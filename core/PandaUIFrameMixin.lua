@@ -15,20 +15,41 @@ function FrameMixin:Init()
     for _, childFrame in pairs(self.childFrames) do childFrame:Init() end
 end
 
-function FrameMixin:UpdateStyles()
-    local d = self.details;
-    local p = d.parent;
+local function SetCommonDetails(self, d, p)
+    self:SetParent(p);
+
     local width = p:GetWidth();
     local height = p:GetHeight();
     local anchor = PandaUICore:anchor();
+
+    if not d.width or d.width.type ~= "auto" then
+        local width = ExtractValue(d.width, width) or width;
+        if width == 0 then width = 0.000001; end
+        self:SetWidth(width);
+    end
+
+    if not d.height or d.height.type ~= "auto" then
+        local height = ExtractValue(d.height, height) or height;
+        if height == 0 then height = 0.000001; end
+        self:SetHeight(height);
+    end
+
+    local anchor = d.anchor or anchor;
+    self:ClearAllPoints();
+    self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
+                  anchor.offsetY);
 
     if d.hidden then
         self:Hide();
     else
         self:Show()
     end
+end
 
-    self:SetParent(p);
+function FrameMixin:UpdateStyles()
+    local d = self.details;
+    local p = d.parent;
+
     self:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8X8", tile = true});
     self:SetBackdropColor(0, 0, 0, 0);
 
@@ -37,18 +58,33 @@ function FrameMixin:UpdateStyles()
         self:SetBackdropColor(c.r, c.g, c.b, c.a);
     end
 
-    width = ExtractValue(d.width, width) or width;
-    height = ExtractValue(d.height, height) or height;
-    anchor = d.anchor or anchor;
+    SetCommonDetails(self, d, p);
 
-    -- Look for better solution
-    if width == 0 then width = 0.000001; end
-    if height == 0 then height = 0.000001; end
+    if d.texture then
+        if not self.texture then
+            self.texture = self:CreateTexture(self:GetName() .. "Texture");
+        end
 
-    self:SetSize(width, height);
-    self:ClearAllPoints();
-    self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
-                  anchor.offsetY);
+        local file = d.texture.file or "Interface\\Buttons\\WHITE8X8";
+
+        SetCommonDetails(self.texture, d.texture, self);
+        self.texture:SetTexture(file);
+    end
+
+    if d.text then
+        local layer = d.text.layer or "OVERLAY";
+        local font = d.text.font or "GameFontNormal";
+        if not self.text then
+            self.text = self:CreateFontString(self:GetName() .. "Text", layer,
+                                              font);
+        end
+
+        d.text.width = d.text.width or PandaUICore:auto();
+        d.text.height = d.text.height or PandaUICore:auto();
+
+        SetCommonDetails(self.text, d.text, self);
+        self.text:SetText(d.text.text or "");
+    end
 end
 
 local function LayoutChildGrid(self)
