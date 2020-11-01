@@ -11,20 +11,21 @@ local function MakeFillOrder(maxCount)
     local next = {1};
     local visited = {};
     local c = 0; -- to prevent infinite iteration
+    local columns = maxCount / Rows;
 
     while table.getn(next) > 0 do
         local n = next[1];
         table.insert(order, n);
         table.remove(next, 1);
 
-        if n + Rows <= maxCount and not visited[(n + Rows) .. ""] then
-            table.insert(next, n + Rows);
-            visited[(n + Rows) .. ""] = true;
-        end
-
         if n + 1 <= maxCount and not visited[(n + 1) .. ""] then
             table.insert(next, n + 1);
             visited[(n + 1) .. ""] = true;
+        end
+
+        if n + columns <= maxCount and not visited[(n + columns) .. ""] then
+            table.insert(next, n + columns);
+            visited[(n + columns) .. ""] = true;
         end
 
         -- safty check

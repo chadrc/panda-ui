@@ -11,13 +11,13 @@ function PandaUIPlayer:Actions()
             name = "ActionButton" .. i,
             backgroundColor = {r = 0, g = 0, b = 1},
             children = {
-                -- {name = "Icon", texture = {}}, {
-                --     name = "BindingText",
-                --     text = {
-                --         font = "GameFontNormal",
-                --         anchor = PandaUICore:anchor("BOTTOM")
-                --     }
-                -- }, 
+                {name = "Icon", texture = {}}, {
+                    name = "BindingText",
+                    text = {
+                        font = "GameFontNormal",
+                        anchor = PandaUICore:anchor("BOTTOM")
+                    }
+                }
                 -- {
                 --     name = "Button",
                 --     type = "Button",
@@ -42,9 +42,24 @@ function PandaUIPlayer:Actions()
                 local button = CreateFrame("Button",
                                            frame:GetName() .. "Button", frame,
                                            "SecureActionButtonTemplate");
+                local macroText = string.format(
+                                      "/click [mod:altshift]MultiBarRightButton%s;[mod:shift]MultiBarBottomLeftButton%s;[mod:alt]MultiBarBottomRightButton%s;[mod:ctrl]MultiBarLeftButton%s;ActionButton%s",
+                                      i, i, i, i, i);
+                -- button:SetID(1);
                 button:SetSize(frame:GetWidth(), frame:GetHeight());
-                button:SetAttribute("type", "action");
-                button:SetAttribute("action", i);
+                button:SetAttribute("type", "macro");
+                button:SetAttribute("macrotext", macroText);
+                -- button:SetAttribute("shift-type", "action");
+                -- button:SetAttribute("alt-type", "action");
+                -- button:SetAttribute("alt-shift-type", "action");
+                -- button:SetAttribute("ctrl-type", "action");
+
+                -- button:SetAttribute("action", i);
+                -- button:SetAttribute("shift-action", i + 12); -- bar 2
+                -- button:SetAttribute("alt-shift-action", i + 24); -- bar 3
+                -- button:SetAttribute("ctrl-action", i + 36); -- bar 4
+                -- button:SetAttribute("shift-action", i + 48); -- bar 5
+                -- button:SetAttribute("alt-action", i + 60); -- bar 6
                 button:SetPoint("CENTER");
             end
         })

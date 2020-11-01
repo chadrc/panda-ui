@@ -127,8 +127,8 @@ local function LayoutChildGrid(self)
         child.details.height = PandaUICore:val(cellHeight);
 
         local index = i - 1;
-        local col = math.floor(index / rows);
-        local row = index % rows;
+        local row = math.floor(index / columns);
+        local col = index % columns;
         local offsetX = col * (cellWidth + cellPadding) * xFactor;
         local offsetY = row * (cellHeight + cellPadding) * yFactor;
 
