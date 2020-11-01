@@ -19,7 +19,9 @@ local framesToHide = {
     MultiBarLeft = {},
     ObjectiveTrackerFrame = {},
     BuffFrame = {},
-    DurabilityFrame = {}
+    DurabilityFrame = {},
+    CastingBarFrame = {},
+    StanceBarFrame = {}
 }
 
 function PandaUICore:ToggleUI()

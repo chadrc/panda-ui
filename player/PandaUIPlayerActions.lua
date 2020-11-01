@@ -70,7 +70,6 @@ function PandaUIPlayer:Actions()
         if indexOffset == 0 and bonus > 0 then
             indexOffset = (1 + (NUM_ACTIONBAR_PAGES + bonus - 2)) *
                               NUM_ACTIONBAR_BUTTONS;
-            print("offset: ", indexOffset);
         end
 
         for i, childFrame in ipairs(frame.childFrames) do
