@@ -64,6 +64,15 @@ function PandaUIPlayer:Actions()
             indexOffset = OffsetsByBar[ModifierToActionBar[frame.bar].bar];
         end
 
+        -- check for bonus offset
+        -- only main bar is changed to bonus
+        local bonus = GetBonusBarOffset();
+        if indexOffset == 0 and bonus > 0 then
+            indexOffset = (1 + (NUM_ACTIONBAR_PAGES + bonus - 2)) *
+                              NUM_ACTIONBAR_BUTTONS;
+            print("offset: ", indexOffset);
+        end
+
         for i, childFrame in ipairs(frame.childFrames) do
             local actionIndex = i + indexOffset;
             local texture = GetActionTexture(actionIndex);
@@ -99,6 +108,8 @@ function PandaUIPlayer:Actions()
                 end,
                 events = {
                     PLAYER_ENTERING_WORLD = SetupActionButtons,
+                    UPDATE_SHAPESHIFT_FORM = SetupActionButtons,
+                    PLAYER_SPECIALIZATION_CHANGED = SetupActionButtons,
                     MODIFIER_STATE_CHANGED = function(frame, key, pressed)
                         local function CheckMod(name, index)
                             if string.find(key, name) then
