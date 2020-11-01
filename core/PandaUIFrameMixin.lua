@@ -65,10 +65,8 @@ function FrameMixin:UpdateStyles()
             self.texture = self:CreateTexture(self:GetName() .. "Texture");
         end
 
-        local file = d.texture.file or "Interface\\Buttons\\WHITE8X8";
-
         SetCommonDetails(self.texture, d.texture, self);
-        self.texture:SetTexture(file);
+        if d.texture.file then self.texture:SetTexture(d.texture.file); end
     end
 
     if d.text then

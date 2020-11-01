@@ -4,6 +4,19 @@ local CellPadding = 5;
 local Columns = 3;
 local GridWidth = ButtonWidth * Columns + CellPadding * (Columns - 1);
 
+local OffsetsByBar = {
+    MultiBarRightButton = 24,
+    MultiBarLeftButton = 36,
+    MultiBarBottomLeftButton = 48,
+    MultiBarBottomRightButton = 60
+};
+local ModifierToActionBar = {
+    {mods = {"alt", "shift"}, bar = "MultiBarRightButton"},
+    {mods = {"shift"}, bar = "MultiBarBottomLeftButton"},
+    {mods = {"alt"}, bar = "MultiBarBottomRightButton"},
+    {mods = {"ctrl"}, bar = "MultiBarLeftButton"}
+};
+
 function PandaUIPlayer:Actions()
     local buttons = {};
     for i = 1, 12 do
@@ -11,7 +24,7 @@ function PandaUIPlayer:Actions()
             name = "ActionButton" .. i,
             backgroundColor = {r = 0, g = 0, b = 1},
             children = {
-                {name = "Icon", texture = {}}, {
+                {name = "Icon", ref = "icon", texture = {}}, {
                     name = "BindingText",
                     text = {
                         font = "GameFontNormal",
@@ -42,9 +55,19 @@ function PandaUIPlayer:Actions()
                 local button = CreateFrame("Button",
                                            frame:GetName() .. "Button", frame,
                                            "SecureActionButtonTemplate");
-                local macroText = string.format(
-                                      "/click [mod:altshift]MultiBarRightButton%s;[mod:shift]MultiBarBottomLeftButton%s;[mod:alt]MultiBarBottomRightButton%s;[mod:ctrl]MultiBarLeftButton%s;ActionButton%s",
-                                      i, i, i, i, i);
+
+                frame.actionButton = button;
+
+                local modTexts = {};
+                for _, mod in ipairs(ModifierToActionBar) do
+                    local mods = table.concat(mod.mods, "");
+                    table.insert(modTexts, string.format("[mod:%s]%s%s", mods,
+                                                         mod.bar, i));
+                end
+
+                local macroText = string.format("/click %s;ActionButton%s",
+                                                table.concat(modTexts, ";"), i);
+
                 -- button:SetID(1);
                 button:SetSize(frame:GetWidth(), frame:GetHeight());
                 button:SetAttribute("type", "macro");
@@ -64,6 +87,21 @@ function PandaUIPlayer:Actions()
             end
         })
     end
+
+    local function SetupActionButtons(frame, bar)
+        local indexOffset = 0;
+        if bar then
+            indexOffset = OffsetsByBar[ModifierToActionBar[bar].bar];
+        end
+        print("setting up actions");
+        for i, childFrame in ipairs(frame.childFrames) do
+            local actionIndex = i + indexOffset;
+            local texture = GetActionTexture(actionIndex);
+            childFrame.refs.icon.details.texture.file = texture;
+            childFrame.refs.icon:UpdateStyles();
+        end
+    end
+
     return {
         name = "Actions",
         backgroundColor = {r = 1.0, g = 0, b = 0},
@@ -80,7 +118,8 @@ function PandaUIPlayer:Actions()
                     cellPadding = CellPadding,
                     start = "TOPLEFT"
                 },
-                children = buttons
+                children = buttons,
+                events = {PLAYER_ENTERING_WORLD = SetupActionButtons}
             }
         }
     }
