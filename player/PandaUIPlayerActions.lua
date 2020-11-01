@@ -54,6 +54,17 @@ function PandaUIPlayer:Actions()
                 button:SetAttribute("type", "macro");
                 button:SetAttribute("macrotext", macroText);
                 button:SetPoint("CENTER");
+
+                button:SetScript("OnEnter", function(frame)
+                    -- GameTooltip_SetDefaultAnchor(GameTooltip, frame);
+                    GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT");
+                    GameTooltip:SetAction(frame:GetParent().actionIndex);
+                    GameTooltip:Show();
+                end);
+                button:SetScript("OnLeave",
+                                 function(frame)
+                    GameTooltip:Hide();
+                end)
             end
         })
     end
@@ -97,6 +108,8 @@ function PandaUIPlayer:Actions()
         local indexOffset = GetActionOffset(frame);
         for i, childFrame in ipairs(frame.childFrames) do
             local actionIndex = i + indexOffset;
+            childFrame.actionIndex = actionIndex;
+
             local texture = GetActionTexture(actionIndex);
             childFrame.refs.icon.details.texture.file = texture;
             childFrame.refs.icon:UpdateStyles();
