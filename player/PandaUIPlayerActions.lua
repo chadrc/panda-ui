@@ -78,9 +78,16 @@ function PandaUIPlayer:Actions()
         -- check for bonus offset
         -- only main bar is changed to bonus
         local bonus = GetBonusBarOffset();
-        if indexOffset == 0 and bonus > 0 then
-            indexOffset = (NUM_ACTIONBAR_PAGES + bonus - 1) *
-                              NUM_ACTIONBAR_BUTTONS;
+        local page = GetActionBarPage();
+        -- if displaying main bar and not on main page, override bonus bar
+        -- else use bonus if active
+        if indexOffset == 0 then
+            if page > 1 then
+                indexOffset = (page - 1) * NUM_ACTIONBAR_BUTTONS;
+            elseif bonus > 0 then
+                indexOffset = (NUM_ACTIONBAR_PAGES + bonus - 1) *
+                                  NUM_ACTIONBAR_BUTTONS;
+            end
         end
 
         return indexOffset;
@@ -148,6 +155,7 @@ function PandaUIPlayer:Actions()
                     UPDATE_SHAPESHIFT_FORM = SetupActionButtons,
                     PLAYER_SPECIALIZATION_CHANGED = SetupActionButtons,
                     ACTIONBAR_UPDATE_STATE = UpdateActionButtons,
+                    ACTIONBAR_PAGE_CHANGED = SetupActionButtons,
                     PLAYER_TARGET_CHANGED = function(frame)
                         if UnitExists("target") and not frame.hasTarget then
                             -- new target register update event to watch range changes
