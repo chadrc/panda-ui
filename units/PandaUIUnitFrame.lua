@@ -58,7 +58,6 @@ function PandaUIUnits:UnitFrame(unit)
     end
 
     local InitCast = function(frame, unit)
-        print("init cast")
         InitCastbars(frame, unit, UnitCastingInfo);
     end
 
