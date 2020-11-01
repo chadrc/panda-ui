@@ -166,7 +166,6 @@ function PandaUICore:CreateFrame(name, details, children)
 
     if d.unit then
         for name, h in pairs(d.unit.events or {}) do
-            print("unit event ", name, ' - ', d.unit.name);
             frame:RegisterUnitEvent(name, d.unit.name);
             allEvents[name] = h;
         end

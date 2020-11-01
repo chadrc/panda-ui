@@ -69,7 +69,7 @@ function PandaUIUnits:UnitFrame(unit)
         name = "UnitFrame",
         height = PandaUICore:val(50),
         width = PandaUICore:val(150),
-        backgroundColor = {r = .5, g = .0, b = 0, a = .35},
+        backgroundColor = {r = .5, g = .5, b = .5, a = .4},
         children = {
             PandaUICore:StatusBar({
                 name = "CastBar",
@@ -101,7 +101,6 @@ function PandaUIUnits:UnitFrame(unit)
             name = unit,
             events = {
                 UNIT_HEALTH = function(frame)
-                    print("health")
                     local info = PandaUIUnits:GetUnitInfo(unit);
                     local f = info.health / info.maxHealth;
                     frame.refs.health:SetValue(f);
@@ -122,7 +121,7 @@ function PandaUIUnits:UnitFrame(unit)
             }
         },
         events = {},
-        scripts = {},
+        scripts = {OnShow = function(frame) frame:Update(); end},
         init = function(frame)
             function frame:Update()
                 local info = PandaUIUnits:GetUnitInfo(unit);
@@ -135,19 +134,31 @@ function PandaUIUnits:UnitFrame(unit)
     };
 end
 
-function PandaUIUnits:TargetFrame(vars)
-    local point = vars.Target.position or
-                      {
-            point = "CENTER",
-            relativePoint = "CENTER",
-            xOfs = 0,
-            yOfs = 200
-        };
-    local details = self:UnitFrame("target");
-    details.hidden = true;
-    details.movable = true;
+local function SetMovable(details, default, vars, saveVar)
+    local point = vars[saveVar] or default;
     details.anchor = PandaUICore:anchor(point.point, point.relativePoint,
                                         point.xOfs, point.yOfs);
+    details.movable = true;
+    details.scripts.OnMouseDown = function(frame) frame:StartMoving(); end
+    details.scripts.OnMouseUp = function(frame)
+        frame:StopMovingOrSizing();
+        local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint(1);
+        vars[saveVar] = {
+            point = point,
+            relativeTo = relativeTo,
+            relativePoint = relativePoint,
+            xOfs = xOfs,
+            yOfs = yOfs
+        };
+
+        frame.details.anchor = PandaUICore:anchor(point, relativePoint, xOfs,
+                                                  yOfs);
+    end
+end
+
+function PandaUIUnits:TargetFrame(vars)
+    local details = self:UnitFrame("target");
+    details.hidden = true;
 
     local function SetupTarget(frame)
         local info = PandaUIUnits:GetUnitInfo("target");
@@ -169,22 +180,25 @@ function PandaUIUnits:TargetFrame(vars)
     details.events.PLAYER_ENTERING_WORLD = SetupTarget;
     details.events.PLAYER_TARGET_CHANGED = SetupTarget;
 
-    details.scripts.OnMouseDown = function(frame) frame:StartMoving(); end
+    SetMovable(details, {
+        point = "CENTER",
+        relativePoint = "CENTER",
+        xOfs = 0,
+        yOfs = 200
+    }, vars.Target, "position");
 
-    details.scripts.OnMouseUp = function(frame)
-        frame:StopMovingOrSizing();
-        local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint(1);
-        vars.Target.position = {
-            point = point,
-            relativeTo = relativeTo,
-            relativePoint = relativePoint,
-            xOfs = xOfs,
-            yOfs = yOfs
-        };
+    return details;
+end
 
-        frame.details.anchor = PandaUICore:anchor(point, relativePoint, xOfs,
-                                                  yOfs);
-    end
+function PandaUIUnits:PlayerFrame(vars)
+    local details = self:UnitFrame("player");
+    details.anchor = point;
+    SetMovable(details, {
+        point = "CENTER",
+        relativePoint = "CENTER",
+        xOfs = 0,
+        yOfs = -200
+    }, vars.Player, "position");
 
     return details;
 end

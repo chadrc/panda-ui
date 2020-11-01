@@ -7,7 +7,10 @@ function PandaUIUnits:Initialize()
     end
     local root = PandaUICore:CreateFrame("PandaUIUnits", {
         -- backgroundColor = {r = 0, g = 0, b = 0, a = .2}
-    }, {PandaUIUnits:TargetFrame(PandaUISavedVariables.UnitFrames)});
+    }, {
+        PandaUIUnits:TargetFrame(PandaUISavedVariables.UnitFrames),
+        PandaUIUnits:PlayerFrame(PandaUISavedVariables.UnitFrames)
+    });
 
     root:UpdateStyles();
     root:UpdateLayout();
