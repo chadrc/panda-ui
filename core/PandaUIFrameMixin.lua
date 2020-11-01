@@ -66,7 +66,7 @@ function FrameMixin:UpdateStyles()
         end
 
         SetCommonDetails(self.texture, d.texture, self);
-        if d.texture.file then self.texture:SetTexture(d.texture.file); end
+        self.texture:SetTexture(d.texture.file);
     end
 
     if d.text then

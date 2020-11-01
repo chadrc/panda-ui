@@ -143,6 +143,10 @@ function PandaUICore:CreateFrame(name, details, children)
     if d.onEnter then frame:SetScript("OnEnter", d.onEnter); end
     if d.onLeave then frame:SetScript("OnLeave", d.onLeave); end
 
+    if d.scripts then
+        for h, s in pairs(d.scripts) do frame:SetScript(h, s); end
+    end
+
     if d.clicks then frame:RegisterForClicks(unpack(d.clicks)); end
     if t == "Button" and d.onClick then
         frame:SetScript("OnClick", d.onClick);

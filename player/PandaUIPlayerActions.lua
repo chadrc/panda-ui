@@ -7,9 +7,10 @@ local GridWidth = ButtonWidth * Columns + CellPadding * (Columns - 1);
 local OffsetsByBar = {
     MultiBarRightButton = 24,
     MultiBarLeftButton = 36,
-    MultiBarBottomLeftButton = 48,
-    MultiBarBottomRightButton = 60
+    MultiBarBottomRightButton = 48,
+    MultiBarBottomLeftButton = 60
 };
+
 local ModifierToActionBar = {
     {mods = {"alt", "shift"}, bar = "MultiBarRightButton"},
     {mods = {"shift"}, bar = "MultiBarBottomLeftButton"},
@@ -22,7 +23,7 @@ function PandaUIPlayer:Actions()
     for i = 1, 12 do
         table.insert(buttons, {
             name = "ActionButton" .. i,
-            backgroundColor = {r = 0, g = 0, b = 1},
+            -- backgroundColor = {r = 0, g = 0, b = 1},
             children = {
                 {name = "Icon", ref = "icon", texture = {}}, {
                     name = "BindingText",
@@ -31,25 +32,6 @@ function PandaUIPlayer:Actions()
                         anchor = PandaUICore:anchor("BOTTOM")
                     }
                 }
-                -- {
-                --     name = "Button",
-                --     type = "Button",
-                --     clicks = {"LeftButton"},
-                --     template = "SecureActionButtonTemplate",
-                --     -- onClick = function(frame, button)
-                --     --     print('click: ', button);
-                --     -- end,
-                --     -- attributes = {
-                --     --     ["type*"] = "spell",
-                --     --     ["spell*"] = "Regrowth",
-                --     --     ["unit*"] = "player"
-                --     -- },
-                --     init = function(frame)
-                --         frame:SetAttribute("type", "spell");
-                --         frame:SetAttribute("spell", "Regrowth");
-                --         frame:SetAttribute("unit", "player");
-                --     end
-                -- }
             },
             init = function(frame)
                 local button = CreateFrame("Button",
@@ -68,32 +50,20 @@ function PandaUIPlayer:Actions()
                 local macroText = string.format("/click %s;ActionButton%s",
                                                 table.concat(modTexts, ";"), i);
 
-                -- button:SetID(1);
                 button:SetSize(frame:GetWidth(), frame:GetHeight());
                 button:SetAttribute("type", "macro");
                 button:SetAttribute("macrotext", macroText);
-                -- button:SetAttribute("shift-type", "action");
-                -- button:SetAttribute("alt-type", "action");
-                -- button:SetAttribute("alt-shift-type", "action");
-                -- button:SetAttribute("ctrl-type", "action");
-
-                -- button:SetAttribute("action", i);
-                -- button:SetAttribute("shift-action", i + 12); -- bar 2
-                -- button:SetAttribute("alt-shift-action", i + 24); -- bar 3
-                -- button:SetAttribute("ctrl-action", i + 36); -- bar 4
-                -- button:SetAttribute("shift-action", i + 48); -- bar 5
-                -- button:SetAttribute("alt-action", i + 60); -- bar 6
                 button:SetPoint("CENTER");
             end
         })
     end
 
-    local function SetupActionButtons(frame, bar)
+    local function SetupActionButtons(frame)
         local indexOffset = 0;
-        if bar then
-            indexOffset = OffsetsByBar[ModifierToActionBar[bar].bar];
+        if frame.bar > 0 then
+            indexOffset = OffsetsByBar[ModifierToActionBar[frame.bar].bar];
         end
-        print("setting up actions");
+
         for i, childFrame in ipairs(frame.childFrames) do
             local actionIndex = i + indexOffset;
             local texture = GetActionTexture(actionIndex);
@@ -104,7 +74,7 @@ function PandaUIPlayer:Actions()
 
     return {
         name = "Actions",
-        backgroundColor = {r = 1.0, g = 0, b = 0},
+        -- backgroundColor = {r = 1.0, g = 0, b = 0},
         children = {
             {
                 name = "Buttons",
@@ -119,7 +89,51 @@ function PandaUIPlayer:Actions()
                     start = "TOPLEFT"
                 },
                 children = buttons,
-                events = {PLAYER_ENTERING_WORLD = SetupActionButtons}
+                init = function(frame)
+                    frame.bar = 0;
+                    frame.mods = {
+                        "", -- alt
+                        "", -- ctrl
+                        "" -- shift
+                    }
+                end,
+                events = {
+                    PLAYER_ENTERING_WORLD = SetupActionButtons,
+                    MODIFIER_STATE_CHANGED = function(frame, key, pressed)
+                        local function CheckMod(name, index)
+                            if string.find(key, name) then
+                                if pressed == 1 then
+                                    frame.mods[index] = string.lower(name);
+                                else
+                                    frame.mods[index] = "";
+                                end
+                            end
+                        end
+
+                        -- update state with pressed/relased
+                        CheckMod("ALT", 1);
+                        CheckMod("CTRL", 2);
+                        CheckMod("SHIFT", 3);
+
+                        -- use state to determine current mod combination and bar to use
+                        local modStr = table.concat(frame.mods, "");
+
+                        if modStr == "" then
+                            frame.bar = 0;
+                        else
+                            for i, v in ipairs(ModifierToActionBar) do
+                                local s = table.concat(v.mods, "");
+                                if modStr == s then
+                                    -- Only change if registered combo
+                                    frame.bar = i;
+                                    break
+                                end
+                            end
+                        end
+
+                        SetupActionButtons(frame);
+                    end
+                }
             }
         }
     }
