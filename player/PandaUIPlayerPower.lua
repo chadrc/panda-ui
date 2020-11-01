@@ -66,7 +66,7 @@ local classPowers = {
         MakePowerInfo("RAGE") -- Protection
     },
     DRUID = {
-        MakePowerInfo("LUNARPOWER", "MANA"), -- Balance
+        MakePowerInfo("LUNAR_POWER", "MANA"), -- Balance
         MakePowerInfo("MANA"), -- Feral
         MakePowerInfo("MANA"), -- Guardian
         MakePowerInfo("MANA"), -- Restoration
