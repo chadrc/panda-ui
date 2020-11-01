@@ -64,6 +64,17 @@ local classPowers = {
         MakePowerInfo("RAGE"), -- Arms
         MakePowerInfo("RAGE"), -- Fury
         MakePowerInfo("RAGE") -- Protection
+    },
+    DRUID = {
+        MakePowerInfo("LUNARPOWER", "MANA"), -- Balance
+        MakePowerInfo("MANA"), -- Feral
+        MakePowerInfo("MANA"), -- Guardian
+        MakePowerInfo("MANA"), -- Restoration
+        forms = {
+            -- Only needed where different, power type doen't change with Moonkin or Tree forms
+            MakePowerInfo("RAGE"), -- Bear
+            MakePowerInfo("ENERGY", "COMBO_POINTS") -- Cat
+        }
     }
 }
 
@@ -73,7 +84,15 @@ function GetPowerInfo(class, spec)
     -- temporary check to avoid errors while developing
     -- eventually all should be registered
     if classPowers[class] and classPowers[class][spec] then
-        powerInfo = classPowers[class][spec];
+        local classPower = classPowers[class];
+        powerInfo = classPower[spec];
+
+        if classPower.forms then
+            local form = GetShapeshiftForm();
+            if classPower.forms[form] then
+                powerInfo = classPower.forms[form];
+            end
+        end
     else
         print('Class ', class, ' with spec ', spec,
               ' not configured. Using defaults.')
@@ -255,7 +274,8 @@ function PandaUIPlayer:PlayerPowerFrame()
         },
         events = {
             PLAYER_ENTERING_WORLD = Init,
-            ACTIVE_TALENT_GROUP_CHANGED = Init
+            ACTIVE_TALENT_GROUP_CHANGED = Init,
+            UPDATE_SHAPESHIFT_FORM = Init
         }
     }
 end
