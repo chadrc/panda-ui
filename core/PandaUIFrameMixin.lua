@@ -39,6 +39,8 @@ local function SetCommonDetails(self, d, p)
     self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
                   anchor.offsetY);
 
+    self:SetAlpha(d.alpha or 1.0);
+
     if d.hidden then
         self:Hide();
     else

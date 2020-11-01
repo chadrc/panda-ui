@@ -58,7 +58,7 @@ function PandaUIPlayer:Actions()
         })
     end
 
-    local function SetupActionButtons(frame)
+    local function GetActionOffset(frame)
         local indexOffset = 0;
         if frame.bar > 0 then
             indexOffset = OffsetsByBar[ModifierToActionBar[frame.bar].bar];
@@ -68,16 +68,41 @@ function PandaUIPlayer:Actions()
         -- only main bar is changed to bonus
         local bonus = GetBonusBarOffset();
         if indexOffset == 0 and bonus > 0 then
-            indexOffset = (1 + (NUM_ACTIONBAR_PAGES + bonus - 2)) *
+            indexOffset = (NUM_ACTIONBAR_PAGES + bonus - 1) *
                               NUM_ACTIONBAR_BUTTONS;
         end
 
+        return indexOffset;
+    end
+
+    local function UpdateActionButtons(frame)
+        local indexOffset = GetActionOffset(frame);
+        for i, childFrame in ipairs(frame.childFrames) do
+            local actionIndex = i + indexOffset;
+            local usable = IsUsableAction(actionIndex);
+            local inRange = IsActionInRange(actionIndex);
+            local hasTarget = UnitExists("target");
+
+            if usable and inRange or not hasTarget then
+                childFrame.refs.icon.details.alpha = 1.0;
+            else
+                childFrame.refs.icon.details.alpha = .25;
+            end
+
+            childFrame.refs.icon:UpdateStyles();
+        end
+    end
+
+    local function SetupActionButtons(frame)
+        local indexOffset = GetActionOffset(frame);
         for i, childFrame in ipairs(frame.childFrames) do
             local actionIndex = i + indexOffset;
             local texture = GetActionTexture(actionIndex);
             childFrame.refs.icon.details.texture.file = texture;
             childFrame.refs.icon:UpdateStyles();
         end
+
+        UpdateActionButtons(frame);
     end
 
     return {
@@ -109,6 +134,21 @@ function PandaUIPlayer:Actions()
                     PLAYER_ENTERING_WORLD = SetupActionButtons,
                     UPDATE_SHAPESHIFT_FORM = SetupActionButtons,
                     PLAYER_SPECIALIZATION_CHANGED = SetupActionButtons,
+                    ACTIONBAR_UPDATE_STATE = UpdateActionButtons,
+                    PLAYER_TARGET_CHANGED = function(frame)
+                        if UnitExists("target") and not frame.hasTarget then
+                            -- new target register update event to watch range changes
+                            frame.hasTarget = true;
+                            frame:SetScript("OnUpdate", function(frame)
+                                UpdateActionButtons(frame);
+                            end)
+                        elseif not UnitExists("target") then
+                            -- de-targeted
+                            frame.hasTarget = false;
+                            frame:SetScript("OnUpdate", nil);
+                        end
+                        UpdateActionButtons(frame);
+                    end,
                     MODIFIER_STATE_CHANGED = function(frame, key, pressed)
                         local function CheckMod(name, index)
                             if string.find(key, name) then
