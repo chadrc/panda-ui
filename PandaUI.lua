@@ -46,5 +46,9 @@ function PandaUIMainFrame_OnEvent(self, event, ...)
         -- testFrame:UpdateStyles();
         -- testFrame:UpdateLayout();
         -- testFrame:Init();
+        -- print(PandaUIActionButtonTemplate:GetAttribute("type"));
+        -- PandaUIActionButtonTemplate:SetAttribute("type", "spell");
+        -- PandaUIActionButtonTemplate:SetAttribute("spell", "Regrowth");
+        -- PandaUIActionButtonTemplate:SetAttribute("target", "player");
     end
 end

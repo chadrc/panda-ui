@@ -108,10 +108,22 @@ function PandaUICore:CreateFrame(name, details, children)
                 tostring(d.parent:GetNumChildren() + 1);
     end
 
-    local frame = CreateFrame(t, n, d.parent,
-                              BackdropTemplateMixin and "BackdropTemplate");
+    local templates = {};
+    if BackdropTemplateMixin then
+        table.insert(templates, "BackdropTemplate");
+    end
+    if tmp then table.insert(templates, tmp); end
+
+    local frame = CreateFrame(t, n, d.parent, table.concat(templates, ","));
     frame.details = d;
     frame.refs = {};
+
+    if d.attributes then
+        for k, v in pairs(d.attributes) do
+            -- print('attr: ', k, " = ", v);
+            frame:SetAttribute(k, v);
+        end
+    end
 
     local childFrames = {};
     if children then
@@ -128,11 +140,13 @@ function PandaUICore:CreateFrame(name, details, children)
     end
     frame.childFrames = childFrames;
 
-    frame:SetScript("OnEnter", d.onEnter);
-    frame:SetScript("OnLeave", d.onLeave);
+    if d.onEnter then frame:SetScript("OnEnter", d.onEnter); end
+    if d.onLeave then frame:SetScript("OnLeave", d.onLeave); end
 
     if d.clicks then frame:RegisterForClicks(unpack(d.clicks)); end
-    if t == "Button" then frame:SetScript("OnClick", d.onClick); end
+    if t == "Button" and d.onClick then
+        frame:SetScript("OnClick", d.onClick);
+    end
 
     local eventCount = 0;
     for name, _ in pairs(d.events or {}) do

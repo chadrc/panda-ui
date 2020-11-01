@@ -219,6 +219,6 @@ function PandaUIPlayer:PlayerBuffs()
 end
 
 function PandaUIPlayer:PlayerDebuffs()
-    return MakeGrid("Debuggs", DEBUFF_MAX_DISPLAY, "TOPLEFT", "HARMFUL",
+    return MakeGrid("Debuffs", DEBUFF_MAX_DISPLAY, "TOPLEFT", "HARMFUL",
                     "ANCHOR_TOPLEFT");
 end

@@ -10,7 +10,7 @@ function PandaUIPlayer:Initialize()
             anchor = PandaUICore:anchor("TOPLEFT"),
             childLayout = {direction = "horizontal"},
             children = {
-                self:PlayerBuffs(), {name = "Actions"}, self:PlayerDebuffs()
+                self:PlayerBuffs(), self:Actions(), self:PlayerDebuffs()
             }
         }, {
             name = "PlayerInfo",

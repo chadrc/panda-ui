@@ -89,7 +89,16 @@ end
 
 local function LayoutChildGrid(self)
     local rows = self.details.childLayout.rows;
-    local columns = math.floor(table.getn(self.childFrames) / rows);
+    local columns = self.details.childLayout.columns;
+    local numChildren = table.getn(self.childFrames);
+    if not rows and not columns then
+        rows = 1;
+        columns = numChildren;
+    elseif not rows then
+        rows = math.ceil(numChildren / columns);
+    elseif not columns then
+        columns = math.ceil(numChildren / rows);
+    end
     local cellWidth = self.details.childLayout.cellWidth;
     local cellHeight = self.details.childLayout.cellHeight;
     local cellPadding = self.details.childLayout.cellPadding or 0;
