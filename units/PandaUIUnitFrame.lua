@@ -26,6 +26,46 @@ function PandaUIUnits:GetUnitInfo(unit)
 end
 
 function PandaUIUnits:UnitFrame(unit)
+    local function UpdateCastBars(frame)
+        frame.refs.cast:SetMinMaxValues(0, frame.maxValue);
+        frame.refs.cast:SetValue(frame.value);
+    end
+
+    local function Update(frame)
+        if not frame.casting then return end
+
+        frame.value = GetTime() - (frame.startTime / 1000);
+        UpdateCastBars(frame);
+    end
+
+    local function EndCast(frame, unit)
+        frame.casting = false;
+        frame.maxValue = 1;
+        frame.value = 0;
+        UpdateCastBars(frame);
+        frame:SetScript("OnUpdate", nil);
+    end
+
+    local function InitCastbars(frame, unit, infoFunc)
+        local name, text, texture, startTime, endTime, isTradeSkill, castID,
+              notInterruptible = infoFunc(unit);
+
+        frame:SetScript("OnUpdate", function(frame) Update(frame) end);
+        frame.casting = true;
+        frame.startTime = startTime;
+        frame.maxValue = (endTime - startTime) / 1000;
+        Update(frame)
+    end
+
+    local InitCast = function(frame, unit)
+        print("init cast")
+        InitCastbars(frame, unit, UnitCastingInfo);
+    end
+
+    local InitChannel = function(frame, unit)
+        InitCastbars(frame, unit, UnitChannelInfo);
+    end
+
     return {
         name = "UnitFrame",
         height = PandaUICore:val(50),
@@ -35,6 +75,7 @@ function PandaUIUnits:UnitFrame(unit)
         children = {
             PandaUICore:StatusBar({
                 name = "CastBar",
+                ref = "cast",
                 statusBar = {color = {r = .8, g = .8, b = .8, a = .75}}
             }), {
                 name = "Status",
@@ -71,7 +112,15 @@ function PandaUIUnits:UnitFrame(unit)
                     local info = PandaUIUnits:GetUnitInfo(unit);
                     local f = info.power / info.maxPower;
                     frame.refs.power:SetValue(f);
-                end
+                end,
+                UNIT_SPELLCAST_START = InitCast,
+                UNIT_SPELLCAST_DELAYED = InitCast,
+                UNIT_SPELLCAST_STOP = EndCast,
+                UNIT_SPELLCAST_FAILED = EndCast,
+                UNIT_SPELLCAST_INTERRUPTED = EndCast,
+                UNIT_SPELLCAST_CHANNEL_START = InitChannel,
+                UNIT_SPELLCAST_CHANNEL_UPDATE = InitChannel,
+                UNIT_SPELLCAST_CHANNEL_STOP = EndCast
             }
         },
         events = {},
