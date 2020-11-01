@@ -154,15 +154,23 @@ function PandaUICore:CreateFrame(name, details, children)
         frame:SetScript("OnClick", d.onClick);
     end
 
-    local eventCount = 0;
-    for name, _ in pairs(d.events or {}) do
+    local allEvents = {};
+    for name, h in pairs(d.events or {}) do
         frame:RegisterEvent(name);
-        eventCount = eventCount + 1;
+        allEvents[name] = h;
     end
 
-    if eventCount > 0 then
+    if d.unit then
+        for name, h in pairs(d.unit.events or {}) do
+            print("unit event ", name, ' - ', d.unit.name);
+            frame:RegisterUnitEvent(name, d.unit.name);
+            allEvents[name] = h;
+        end
+    end
+
+    if table.getn(allEvents) then
         frame:SetScript("OnEvent", function(self, event, ...)
-            if self.events[event] then self.events[event](self, ...); end
+            if allEvents[event] then allEvents[event](self, ...); end
         end)
     end
 

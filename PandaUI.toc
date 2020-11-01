@@ -4,5 +4,6 @@
 ## Version: 0.1
 
 core/PandaUICore.xml
+units/PandaUIUnits.xml
 player/PandaUIPlayer.xml
 PandaUIMainFrame.xml

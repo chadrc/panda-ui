@@ -17,6 +17,7 @@ function PandaUIMainFrame_OnLoad()
 
     PandaUICore:Initialize();
     PandaUIPlayer:Initialize();
+    PandaUIUnits:Initialize();
 
     SlashCmdList["PANDAUI"] = PandaUI_OnSlash;
 
