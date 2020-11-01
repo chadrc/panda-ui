@@ -69,8 +69,7 @@ function PandaUIUnits:UnitFrame(unit)
         name = "UnitFrame",
         height = PandaUICore:val(50),
         width = PandaUICore:val(150),
-        backgroundColor = {r = .5, g = .0, b = 0, a = .25},
-        anchor = PandaUICore:anchor("TOP"),
+        backgroundColor = {r = .5, g = .0, b = 0, a = .35},
         children = {
             PandaUICore:StatusBar({
                 name = "CastBar",
@@ -123,6 +122,7 @@ function PandaUIUnits:UnitFrame(unit)
             }
         },
         events = {},
+        scripts = {},
         init = function(frame)
             function frame:Update()
                 local info = PandaUIUnits:GetUnitInfo(unit);
@@ -135,13 +135,29 @@ function PandaUIUnits:UnitFrame(unit)
     };
 end
 
-function PandaUIUnits:TargetFrame()
+function PandaUIUnits:TargetFrame(vars)
+    local point = vars.Target.position or
+                      {
+            point = "CENTER",
+            relativePoint = "CENTER",
+            xOfs = 0,
+            yOfs = 200
+        };
     local details = self:UnitFrame("target");
     details.hidden = true;
+    details.movable = true;
+    details.anchor = PandaUICore:anchor(point.point, point.relativePoint,
+                                        point.xOfs, point.yOfs);
 
     local function SetupTarget(frame)
-        if UnitExists("target") then
+        local info = self:GetUnitInfo("target");
+        if info then
             frame.details.hidden = false;
+            if info.isFriend then
+                frame.details.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
+            else
+                frame.details.backgroundColor = {r = .5, g = 0, b = 0, a = .4};
+            end
         else
             frame.details.hidden = true;
         end
@@ -152,6 +168,23 @@ function PandaUIUnits:TargetFrame()
 
     details.events.PLAYER_ENTERING_WORLD = SetupTarget;
     details.events.PLAYER_TARGET_CHANGED = SetupTarget;
+
+    details.scripts.OnMouseDown = function(frame) frame:StartMoving(); end
+
+    details.scripts.OnMouseUp = function(frame)
+        frame:StopMovingOrSizing();
+        local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint(1);
+        vars.Target.position = {
+            point = point,
+            relativeTo = relativeTo,
+            relativePoint = relativePoint,
+            xOfs = xOfs,
+            yOfs = yOfs
+        };
+
+        frame.details.anchor = PandaUICore:anchor(point, relativePoint, xOfs,
+                                                  yOfs);
+    end
 
     return details;
 end

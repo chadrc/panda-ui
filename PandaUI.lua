@@ -15,10 +15,6 @@ end
 function PandaUIMainFrame_OnLoad()
     PandaUIMainFrame:RegisterEvent("ADDON_LOADED");
 
-    PandaUICore:Initialize();
-    PandaUIPlayer:Initialize();
-    PandaUIUnits:Initialize();
-
     SlashCmdList["PANDAUI"] = PandaUI_OnSlash;
 
     print("Panda UI Load");
@@ -28,8 +24,16 @@ function PandaUIMainFrame_OnEvent(self, event, ...)
     -- print('event: ', event, arg1);
     local name = ...;
     if event == "ADDON_LOADED" and name == "PandaUI" then
-        PandaUICore:HidePandaUI();
+        if not PandaUISavedVariables then PandaUISavedVariables = {}; end
+        if not PandaUISavedCharacterVariables then
+            PandaUISavedCharacterVariables = {};
+        end
 
+        PandaUICore:Initialize();
+        PandaUIPlayer:Initialize();
+        PandaUIUnits:Initialize();
+
+        PandaUICore:HidePandaUI();
         -- local testFrame = PandaUICore:CreateFrame("TestStatus", {
         --     type = "StatusBar",
         --     init = function(frame)

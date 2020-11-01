@@ -119,6 +119,10 @@ function PandaUICore:CreateFrame(name, details, children)
     local frame = CreateFrame(t, n, d.parent, table.concat(templates, ","));
     frame.details = d;
     frame.refs = {};
+    if d.movable then
+        frame:RegisterForDrag("LeftButton");
+        frame:SetMovable(d.movable);
+    end
 
     if d.attributes then
         for k, v in pairs(d.attributes) do

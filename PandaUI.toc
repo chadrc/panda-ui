@@ -2,6 +2,8 @@
 ## Title: PandaUI
 ## Author: YulePanda
 ## Version: 0.1
+## SavedVariables: PandaUISavedVariables
+## SavedVariablesPerCharacter: PandaUISavedCharacterVariables
 
 core/PandaUICore.xml
 units/PandaUIUnits.xml
