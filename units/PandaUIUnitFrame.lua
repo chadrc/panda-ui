@@ -150,7 +150,7 @@ function PandaUIUnits:TargetFrame(vars)
                                         point.xOfs, point.yOfs);
 
     local function SetupTarget(frame)
-        local info = self:GetUnitInfo("target");
+        local info = PandaUIUnits:GetUnitInfo("target");
         if info then
             frame.details.hidden = false;
             if info.isFriend then
