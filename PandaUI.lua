@@ -14,7 +14,6 @@ end
 
 function PandaUIMainFrame_OnLoad()
     PandaUIMainFrame:RegisterEvent("ADDON_LOADED");
-    PandaUIMainFrame:RegisterEvent("NAME_PLATE_UNIT_ADDED");
 
     SlashCmdList["PANDAUI"] = PandaUI_OnSlash;
 
@@ -56,7 +55,5 @@ function PandaUIMainFrame_OnEvent(self, event, ...)
         -- PandaUIActionButtonTemplate:SetAttribute("type", "spell");
         -- PandaUIActionButtonTemplate:SetAttribute("spell", "Regrowth");
         -- PandaUIActionButtonTemplate:SetAttribute("target", "player");
-    elseif event == "NAME_PLATE_UNIT_ADDED" then
-        print('added: ', name);
     end
 end
