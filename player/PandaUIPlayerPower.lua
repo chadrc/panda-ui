@@ -75,6 +75,11 @@ local classPowers = {
             MakePowerInfo("RAGE"), -- Bear
             MakePowerInfo("ENERGY", "COMBO_POINTS") -- Cat
         }
+    },
+    PALADIN = {
+        MakePowerInfo("HOLY_POWER", "MANA"), -- Holy
+        MakePowerInfo("HOLY_POWER", "MANA"), -- Protection
+        MakePowerInfo("HOLY_POWER", "MANA") -- Retribution
     }
 }
 
