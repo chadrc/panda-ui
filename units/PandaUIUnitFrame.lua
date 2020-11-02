@@ -25,7 +25,7 @@ function PandaUIUnits:GetUnitInfo(unit)
     return info;
 end
 
-function PandaUIUnits:UnitFrame(unit)
+function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     local function UpdateCastBars(frame)
         frame.refs.cast:SetMinMaxValues(0, frame.maxValue);
         frame.refs.cast:SetValue(frame.value);
@@ -94,7 +94,19 @@ function PandaUIUnits:UnitFrame(unit)
                             ref = "power",
                             statusBar = {color = {r = 0, g = 0, b = .8}}
                         })
-                }
+                },
+                init = function(frame)
+                    local button = CreateFrame("Button",
+                                               frame:GetName() .. "UnitButton",
+                                               frame, "SecureUnitButtonTemplate")
+                    button:SetSize(frame:GetWidth(), frame:GetHeight());
+                    button:RegisterForClicks("AnyUp");
+                    button:SetPoint("CENTER");
+                    SecureUnitButton_OnLoad(button, unit, dropDownMenu);
+                    -- button:SetAttribute("*type1", "target");
+                    -- button:SetAttribute("shift-type2", "target");
+                    -- button:SetAttribute("unit", unit);
+                end
             }
         },
         unit = {
@@ -157,7 +169,15 @@ local function SetMovable(details, default, vars, saveVar)
 end
 
 function PandaUIUnits:TargetFrame(vars)
-    local details = self:UnitFrame("target");
+    local dropdown = TargetFrameDropDown;
+    local menuFunc = TargetFrameDropDown_Initialize;
+    UIDropDownMenu_SetInitializeFunction(dropdown, menuFunc);
+    UIDropDownMenu_SetDisplayMode(dropdown, "MENU");
+
+    local showmenu = function()
+        ToggleDropDownMenu(1, nil, dropdown, "cursor", 0, 0);
+    end
+    local details = self:UnitFrame("target", showmenu);
     details.hidden = true;
 
     local function SetupTarget(frame)
@@ -191,7 +211,10 @@ function PandaUIUnits:TargetFrame(vars)
 end
 
 function PandaUIUnits:PlayerFrame(vars)
-    local details = self:UnitFrame("player");
+    local menuFunc = function()
+        ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor", 0, 0);
+    end
+    local details = self:UnitFrame("player", menuFunc);
     details.anchor = point;
     SetMovable(details, {
         point = "CENTER",
