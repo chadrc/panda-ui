@@ -98,10 +98,13 @@ function PandaUIPlayer:Actions()
         for i, childFrame in ipairs(frame.childFrames) do
             local actionIndex = i + indexOffset;
             local usable = IsUsableAction(actionIndex);
-            local inRange = IsActionInRange(actionIndex);
             local hasTarget = UnitExists("target");
 
-            if usable and inRange or not hasTarget then
+            local valid = IsActionInRange(actionIndex);
+            local checksRange = (valid ~= nil);
+            local inRange = checksRange and valid;
+
+            if usable and (not checksRange or inRange) or not hasTarget then
                 childFrame.refs.icon.details.alpha = 1.0;
             else
                 childFrame.refs.icon.details.alpha = .25;
