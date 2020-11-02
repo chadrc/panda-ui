@@ -1,12 +1,14 @@
 function PandaUIUnits:GetUnitInfo(unit)
     if not UnitExists(unit) then return nil end
 
+    local powerType, powerToken = UnitPowerType(unit);
     local info = {
         name = UnitFullName(unit),
         class = UnitClass(unit),
         maxHealth = UnitHealthMax(unit),
         health = UnitHealth(unit),
         connected = UnitIsConnected(unit),
+        dead = UnitIsDead(unit),
         castingInfo = {UnitCastingInfo(unit)},
         channelingInfo = {UnitChannelInfo(unit)},
         incomingHeals = UnitGetIncomingHeals(unit),
@@ -15,7 +17,8 @@ function PandaUIUnits:GetUnitInfo(unit)
         groupRole = UnitGroupRolesAssigned(unit),
         isGhost = UnitIsGhost(unit),
         level = UnitLevel(unit),
-        powerType = UnitPowerType(unit),
+        powerType = powerType,
+        powerToken = powerToken,
         maxPower = UnitPowerMax(unit),
         power = UnitPower(unit),
         isEnemy = UnitIsEnemy("player", unit),
@@ -25,13 +28,33 @@ function PandaUIUnits:GetUnitInfo(unit)
     return info;
 end
 
+function Clone(t)
+    local n = {};
+    for k, v in pairs(t) do n[k] = v end
+    return n
+end
+
+local function FadeBy(clr, by)
+    local new = Clone(clr);
+    new.a = new.a or 1.0;
+    new.a = new.a * by;
+    return new;
+end
+
+local BackgroundAlpha = .5;
+local InactiveColor = {r = .5, g = .5, b = .5};
+local DefaultBackgroundColor = {r = .5, g = .5, b = .5, a = BackgroundAlpha};
+local DefaultCastColor = {r = .8, g = .8, b = .8, a = .75};
+local DefaultHealthColor = {r = 0, g = .8, b = 0};
+local DefaultPowerColor = {r = 0, g = 0, b = .8};
+
 function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     local function UpdateCastBars(frame)
         frame.refs.cast:SetMinMaxValues(0, frame.maxValue);
         frame.refs.cast:SetValue(frame.value);
     end
 
-    local function Update(frame)
+    local function UpdateCast(frame)
         if not frame.casting then return end
 
         frame.value = GetTime() - (frame.startTime / 1000);
@@ -50,11 +73,15 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         local name, text, texture, startTime, endTime, isTradeSkill, castID,
               notInterruptible = infoFunc(unit);
 
-        frame:SetScript("OnUpdate", function(frame) Update(frame) end);
-        frame.casting = true;
-        frame.startTime = startTime;
-        frame.maxValue = (endTime - startTime) / 1000;
-        Update(frame)
+        if name then
+            frame:SetScript("OnUpdate", function(frame)
+                UpdateCast(frame)
+            end);
+            frame.casting = true;
+            frame.startTime = startTime;
+            frame.maxValue = (endTime - startTime) / 1000;
+            UpdateCast(frame)
+        end
     end
 
     local InitCast = function(frame, unit)
@@ -65,16 +92,60 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         InitCastbars(frame, unit, UnitChannelInfo);
     end
 
+    local function Setup(frame)
+        local info = PandaUIUnits:GetUnitInfo(unit);
+
+        frame.refs.cast:SetValue(0);
+        frame:SetScript("OnUpdate", nil);
+        -- Check for casting and channeling on new unit
+        InitCast(frame, unit);
+        if not frame.casting then InitChannel(frame, unit); end
+
+        if not info or info.dead then
+            frame.casting = false;
+            frame.channeling = false;
+            frame.refs.health:SetValue(1);
+            frame.refs.power:SetValue(1);
+            frame.refs.health:SetStatusBarColor(InactiveColor);
+            frame.refs.power:SetStatusBarColor(InactiveColor);
+            frame.details.backgroundColor =
+                FadeBy(InactiveColor, BackgroundAlpha);
+            frame.details.alpha = .5;
+            frame:UpdateStyles();
+            return
+        end
+
+        frame.details.alpha = 1.0;
+        frame.details.backgroundColor = DefaultBackgroundColor;
+
+        frame.refs.health:SetStatusBarColor(DefaultHealthColor);
+        frame.refs.power:SetStatusBarColor(DefaultPowerColor);
+
+        frame:UpdateUnit();
+    end
+
+    local function Update(frame)
+        local info = PandaUIUnits:GetUnitInfo(unit);
+        if not info or info.dead then
+            frame.refs.health:SetValue(1);
+            frame.refs.power:SetValue(1);
+            return
+        end
+
+        frame.refs.health:SetValue(info.health / info.maxHealth);
+        frame.refs.power:SetValue(info.power / info.maxPower);
+    end
+
     return {
         name = "UnitFrame",
         height = PandaUICore:val(50),
         width = PandaUICore:val(150),
-        backgroundColor = {r = .5, g = .5, b = .5, a = .4},
+        backgroundColor = DefaultBackgroundColor,
         children = {
             PandaUICore:StatusBar({
                 name = "CastBar",
                 ref = "cast",
-                statusBar = {color = {r = .8, g = .8, b = .8, a = .75}}
+                statusBar = {color = DefaultCastColor}
             }), {
                 name = "Status",
                 childLayout = {direction = "vertical"},
@@ -87,12 +158,12 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                             name = "Health",
                             ref = "health",
                             layout = {parts = 9},
-                            statusBar = {color = {r = 0, g = .8, b = 0}}
+                            statusBar = {color = DefaultHealthColor}
                         }), PandaUICore:StatusBar(
                         {
                             name = "Power",
                             ref = "power",
-                            statusBar = {color = {r = 0, g = 0, b = .8}}
+                            statusBar = {color = DefaultPowerColor}
                         })
                 },
                 init = function(frame)
@@ -112,16 +183,8 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         unit = {
             name = unit,
             events = {
-                UNIT_HEALTH = function(frame)
-                    local info = PandaUIUnits:GetUnitInfo(unit);
-                    local f = info.health / info.maxHealth;
-                    frame.refs.health:SetValue(f);
-                end,
-                UNIT_POWER_FREQUENT = function(frame)
-                    local info = PandaUIUnits:GetUnitInfo(unit);
-                    local f = info.power / info.maxPower;
-                    frame.refs.power:SetValue(f);
-                end,
+                UNIT_HEALTH = Update,
+                UNIT_POWER_FREQUENT = Update,
                 UNIT_SPELLCAST_START = InitCast,
                 UNIT_SPELLCAST_DELAYED = InitCast,
                 UNIT_SPELLCAST_STOP = EndCast,
@@ -133,15 +196,10 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             }
         },
         events = {},
-        scripts = {OnShow = function(frame) frame:Update(); end},
+        scripts = {OnShow = function(frame) frame:SetupUnit(); end},
         init = function(frame)
-            function frame:Update()
-                local info = PandaUIUnits:GetUnitInfo(unit);
-                if not info then return end
-
-                frame.refs.health:SetValue(info.health / info.maxHealth);
-                frame.refs.power:SetValue(info.power / info.maxPower);
-            end
+            function frame:UpdateUnit() Update(frame) end
+            function frame:SetupUnit() Setup(frame) end
         end
     };
 end
@@ -184,23 +242,20 @@ function PandaUIUnits:TargetFrame(vars)
         local info = PandaUIUnits:GetUnitInfo("target");
         local playerInCombat = InCombatLockdown();
 
+        frame:SetupUnit();
+
         if info then
-            frame.details.hidden = false;
-            frame.details.alpha = 1.0;
+            if not playerInCombat then frame.details.hidden = false; end
+
             if info.isFriend then
                 frame.details.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
             else
                 frame.details.backgroundColor = {r = .5, g = 0, b = 0, a = .4};
             end
-        elseif playerInCombat then
-            -- can't hide frame if in combat
-            -- make invisible, will hide on combat exit
-            frame.details.alpha = 0;
-        else
+        elseif not playerInCombat then
             frame.details.hidden = true;
         end
 
-        frame:Update();
         frame:UpdateStyles();
     end
 
@@ -210,15 +265,17 @@ function PandaUIUnits:TargetFrame(vars)
         function(frame)
             -- entering combat, unhide target frame but make invisible
             -- to be available for updates
-            frame.details.hidden = false;
-            frame.details.alpha = 0;
-            frame:UpdateStyles();
+            -- frame.details.alpha = .25;
+            -- frame:UpdateStyles();
         end;
     details.events.PLAYER_REGEN_ENABLED =
         function(frame)
             -- completly hide frame
-            frame.details.hidden = true;
-            frame:UpdateStyles();
+            -- frame:UpdateStyles();
+            if not UnitExists(unit) and not InCombatLockdown() then
+                frame.details.hidden = true;
+                frame:UpdateStyles();
+            end
         end;
 
     SetMovable(details, {

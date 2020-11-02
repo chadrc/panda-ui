@@ -208,15 +208,20 @@ function PandaUICore:StatusBar(details)
     d.name = d.name or "StatusBar";
     d.type = "StatusBar";
     d.init = function(frame)
-        local clr = statusDetails.color or {r = 1.0, g = 1.0, b = 1.0, a = 1.0};
         local texture = frame:CreateTexture(frame:GetName() .. "Texture");
         texture:SetTexture("Interface\\Buttons\\WHITE8X8");
-        texture:SetColorTexture(clr.r, clr.g, clr.b, clr.a);
         frame.statusBarTexture = texture;
         frame:SetStatusBarTexture(texture);
         frame:SetMinMaxValues(0, 1);
         frame:SetValue(0);
         frame:SetReverseFill(statusDetails.reverse or false);
+
+        function frame:SetStatusBarColor(color)
+            local clr = color or {r = 1.0, g = 1.0, b = 1.0, a = 1.0};
+            texture:SetColorTexture(clr.r, clr.g, clr.b, clr.a);
+        end
+        frame:SetStatusBarColor(statusDetails.color)
+
         if orgInit then orgInit(frame); end
     end
 
