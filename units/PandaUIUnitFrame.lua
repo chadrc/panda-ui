@@ -182,13 +182,20 @@ function PandaUIUnits:TargetFrame(vars)
 
     local function SetupTarget(frame)
         local info = PandaUIUnits:GetUnitInfo("target");
+        local playerInCombat = InCombatLockdown();
+
         if info then
             frame.details.hidden = false;
+            frame.details.alpha = 1.0;
             if info.isFriend then
                 frame.details.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
             else
                 frame.details.backgroundColor = {r = .5, g = 0, b = 0, a = .4};
             end
+        elseif playerInCombat then
+            -- can't hide frame if in combat
+            -- make invisible, will hide on combat exit
+            frame.details.alpha = 0;
         else
             frame.details.hidden = true;
         end
@@ -199,6 +206,20 @@ function PandaUIUnits:TargetFrame(vars)
 
     details.events.PLAYER_ENTERING_WORLD = SetupTarget;
     details.events.PLAYER_TARGET_CHANGED = SetupTarget;
+    details.events.PLAYER_REGEN_DISABLED =
+        function(frame)
+            -- entering combat, unhide target frame but make invisible
+            -- to be available for updates
+            frame.details.hidden = false;
+            frame.details.alpha = 0;
+            frame:UpdateStyles();
+        end;
+    details.events.PLAYER_REGEN_ENABLED =
+        function(frame)
+            -- completly hide frame
+            frame.details.hidden = true;
+            frame:UpdateStyles();
+        end;
 
     SetMovable(details, {
         point = "CENTER",
