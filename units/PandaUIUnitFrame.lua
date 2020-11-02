@@ -261,17 +261,8 @@ function PandaUIUnits:TargetFrame(vars)
 
     details.events.PLAYER_ENTERING_WORLD = SetupTarget;
     details.events.PLAYER_TARGET_CHANGED = SetupTarget;
-    details.events.PLAYER_REGEN_DISABLED =
-        function(frame)
-            -- entering combat, unhide target frame but make invisible
-            -- to be available for updates
-            -- frame.details.alpha = .25;
-            -- frame:UpdateStyles();
-        end;
     details.events.PLAYER_REGEN_ENABLED =
         function(frame)
-            -- completly hide frame
-            -- frame:UpdateStyles();
             if not UnitExists(unit) and not InCombatLockdown() then
                 frame.details.hidden = true;
                 frame:UpdateStyles();
