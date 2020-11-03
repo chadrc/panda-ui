@@ -49,6 +49,13 @@ local function SetCommonDetails(self, d, p)
 
 end
 
+function FrameMixin:SetBackgroundColor(clr)
+    self:SetBackdropColor(clr.r, clr.g, clr.b, clr.a);
+end
+
+-- deprecated, switching to this being a on off use for creation
+-- updates will be done through convenience methods
+-- this way is confusing to use for secure frames which can't be updated in combat
 function FrameMixin:UpdateStyles()
     local d = self.details;
     local p = d.parent;

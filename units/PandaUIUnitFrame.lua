@@ -122,16 +122,13 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             frame.refs.power:SetValue(1);
             frame.refs.health:SetStatusBarColor(InactiveColor);
             frame.refs.power:SetStatusBarColor(InactiveColor);
-            frame.details.backgroundColor =
-                FadeBy(InactiveColor, BackgroundAlpha);
-            frame.details.alpha = .5;
-            frame:UpdateStyles();
+            frame:SetBackgroundColor(FadeBy(InactiveColor, BackgroundAlpha));
+            frame:SetAlpha(.5);
             return
         end
 
-        frame.details.alpha = 1.0;
-        frame.details.backgroundColor = frame.backgroundColor or
-                                            DefaultBackgroundColor;
+        frame:SetAlpha(1.0);
+        frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor);
 
         frame.refs.health:SetStatusBarColor(DefaultHealthColor);
         frame.refs.power:SetStatusBarColor(DefaultPowerColor);
@@ -159,8 +156,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             description = string.sub(description, 0, 14) .. "...";
         end
 
-        frame.refs.description.details.text.text = description;
-        frame.refs.description:UpdateStyles();
+        frame.refs.description.text:SetText(description);
 
         if not info.exists or info.dead then
             frame.refs.health:SetValue(1);
@@ -289,7 +285,7 @@ function PandaUIUnits:TargetFrame(vars)
         local playerInCombat = InCombatLockdown();
 
         if info.exists then
-            if not playerInCombat then frame.details.hidden = false; end
+            if not playerInCombat then frame:Show(); end
 
             if info.isFriend then
                 frame.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
@@ -301,10 +297,10 @@ function PandaUIUnits:TargetFrame(vars)
             end
         elseif not playerInCombat then
             frame.details.hidden = true;
+            frame:Hide();
         end
 
         frame:SetupUnit();
-        frame:UpdateStyles();
     end
 
     details.events.PLAYER_ENTERING_WORLD = SetupTarget;
