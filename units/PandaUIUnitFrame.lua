@@ -94,6 +94,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
 
     local function Setup(frame)
         local info = PandaUIUnits:GetUnitInfo(unit);
+        print("setup", info ~= nil);
 
         frame.refs.cast:SetValue(0);
         frame:SetScript("OnUpdate", nil);
@@ -116,7 +117,8 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         end
 
         frame.details.alpha = 1.0;
-        frame.details.backgroundColor = DefaultBackgroundColor;
+        frame.details.backgroundColor = frame.backgroundColor or
+                                            DefaultBackgroundColor;
 
         frame.refs.health:SetStatusBarColor(DefaultHealthColor);
         frame.refs.power:SetStatusBarColor(DefaultPowerColor);
@@ -242,15 +244,16 @@ function PandaUIUnits:TargetFrame(vars)
         local info = PandaUIUnits:GetUnitInfo("target");
         local playerInCombat = InCombatLockdown();
 
+        print("new target", info ~= nil);
         frame:SetupUnit();
 
         if info then
             if not playerInCombat then frame.details.hidden = false; end
 
             if info.isFriend then
-                frame.details.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
+                frame.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
             else
-                frame.details.backgroundColor = {r = .5, g = 0, b = 0, a = .4};
+                frame.backgroundColor = {r = .5, g = 0, b = 0, a = .4};
             end
         elseif not playerInCombat then
             frame.details.hidden = true;
@@ -261,6 +264,16 @@ function PandaUIUnits:TargetFrame(vars)
 
     details.events.PLAYER_ENTERING_WORLD = SetupTarget;
     details.events.PLAYER_TARGET_CHANGED = SetupTarget;
+    details.events.PLAYER_REGEN_DISABLED =
+        function(frame)
+            print('regen', UnitExists(unit))
+            -- try to catch before combat and show target frame
+            if not UnitExists(unit) and not InCombatLockdown() then
+                frame.details.hidden = false;
+                frame:UpdateStyles();
+            end
+        end
+
     details.events.PLAYER_REGEN_ENABLED =
         function(frame)
             if not UnitExists(unit) and not InCombatLockdown() then
