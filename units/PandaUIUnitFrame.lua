@@ -162,11 +162,6 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         frame.refs.description.details.text.text = description;
         frame.refs.description:UpdateStyles();
 
-        -- Compare size to frame size
-        if string.len(description) > 10 then
-            description = string.sub(description, 0, 14) .. "...";
-        end
-
         if not info.exists or info.dead then
             frame.refs.health:SetValue(1);
             frame.refs.power:SetValue(1);
@@ -296,7 +291,6 @@ function PandaUIUnits:TargetFrame(vars)
         if info.exists then
             if not playerInCombat then frame.details.hidden = false; end
 
-            print(info.isFriend, " - ", info.isEnemy);
             if info.isFriend then
                 frame.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
             elseif info.isEnemy then
@@ -318,7 +312,7 @@ function PandaUIUnits:TargetFrame(vars)
     details.events.PLAYER_REGEN_DISABLED =
         function(frame)
             -- try to catch before combat and show target frame
-            if not UnitExists(unit) and not InCombatLockdown() then
+            if not UnitExists("target") and not InCombatLockdown() then
                 frame.details.hidden = false;
                 frame:UpdateStyles();
             end
@@ -326,7 +320,7 @@ function PandaUIUnits:TargetFrame(vars)
 
     details.events.PLAYER_REGEN_ENABLED =
         function(frame)
-            if not UnitExists(unit) and not InCombatLockdown() then
+            if not UnitExists("target") and not InCombatLockdown() then
                 frame.details.hidden = true;
                 frame:UpdateStyles();
             end
