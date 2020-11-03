@@ -209,6 +209,15 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                     -- button:SetAttribute("*type1", "target");
                     -- button:SetAttribute("shift-type2", "target");
                     -- button:SetAttribute("unit", unit);
+                    button:SetScript("OnEnter", function(frame)
+                        GameTooltip:SetOwner(frame, "ANCHOR_BOTTOM");
+                        GameTooltip:SetUnit(unit, true);
+                        GameTooltip:Show();
+                    end);
+                    button:SetScript("OnLeave",
+                                     function(frame)
+                        GameTooltip:Hide();
+                    end);
                 end
             }, {
                 name = "Description",
