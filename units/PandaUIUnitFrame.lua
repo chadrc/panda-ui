@@ -1,9 +1,12 @@
 function PandaUIUnits:GetUnitInfo(unit)
-    if not UnitExists(unit) then return nil end
+    if not UnitExists(unit) then return {exists = false} end
 
     local powerType, powerToken = UnitPowerType(unit);
+    local name, realm = UnitName(unit);
     local info = {
-        name = UnitFullName(unit),
+        exists = true,
+        name = name,
+        realm = realm,
         class = UnitClass(unit),
         maxHealth = UnitHealthMax(unit),
         health = UnitHealth(unit),
@@ -22,11 +25,22 @@ function PandaUIUnits:GetUnitInfo(unit)
         maxPower = UnitPowerMax(unit),
         power = UnitPower(unit),
         isEnemy = UnitIsEnemy("player", unit),
-        isFriend = UnitIsFriend("player", unit)
+        isFriend = UnitIsFriend("player", unit),
+        classification = UnitClassification(unit)
     };
 
     return info;
 end
+
+local ClassificationLabels = {
+    worldboss = "W",
+    rareelite = "RE",
+    elite = "E",
+    rare = "R",
+    normal = "",
+    trivial = "",
+    minus = "C"
+};
 
 function Clone(t)
     local n = {};
@@ -95,13 +109,32 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     local function Setup(frame)
         local info = PandaUIUnits:GetUnitInfo(unit);
 
+        -- set description text
+        local classification =
+            ClassificationLabels[info.classification or ""] or "";
+
+        local level = info.level or -1;
+        if level == -1 then level = "??" end
+        if classification ~= "" then level = level .. " "; end
+
+        local description = string.format("(%s%s) %s", level, classification,
+                                          info.name or "");
+
+        -- Compare size to frame size
+        if string.len(description) > 10 then
+            description = string.sub(description, 0, 14) .. "...";
+        end
+
+        frame.refs.description.details.text.text = description;
+        frame.refs.description:UpdateStyles();
+
         frame.refs.cast:SetValue(0);
         frame:SetScript("OnUpdate", nil);
         -- Check for casting and channeling on new unit
         InitCast(frame, unit);
         if not frame.casting then InitChannel(frame, unit); end
 
-        if not info or info.dead then
+        if not info.exists or info.dead then
             frame.casting = false;
             frame.channeling = false;
             frame.refs.health:SetValue(1);
@@ -127,7 +160,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
 
     local function Update(frame)
         local info = PandaUIUnits:GetUnitInfo(unit);
-        if not info or info.dead then
+        if not info.exists or info.dead then
             frame.refs.health:SetValue(1);
             frame.refs.power:SetValue(1);
             return
@@ -179,6 +212,15 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                     -- button:SetAttribute("shift-type2", "target");
                     -- button:SetAttribute("unit", unit);
                 end
+            }, {
+                name = "Description",
+                ref = "description",
+                text = {
+                    font = "PandaUI_GameFontNormalMed",
+                    -- text = "Test Value",
+                    anchor = PandaUICore:anchor("CENTER")
+                },
+                frameLevel = 100
             }
         },
         unit = {
@@ -245,7 +287,7 @@ function PandaUIUnits:TargetFrame(vars)
 
         frame:SetupUnit();
 
-        if info then
+        if info.exists then
             if not playerInCombat then frame.details.hidden = false; end
 
             if info.isFriend then

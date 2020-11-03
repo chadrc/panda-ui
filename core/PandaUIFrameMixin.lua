@@ -46,6 +46,7 @@ local function SetCommonDetails(self, d, p)
     else
         self:Show()
     end
+
 end
 
 function FrameMixin:UpdateStyles()
@@ -61,6 +62,8 @@ function FrameMixin:UpdateStyles()
     end
 
     SetCommonDetails(self, d, p);
+
+    if d.frameLevel then self:SetFrameLevel(d.frameLevel); end
 
     if d.texture then
         if not self.texture then
