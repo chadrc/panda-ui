@@ -212,6 +212,4 @@ function FrameMixin:UpdateLayout()
     end
 end
 
-function PandaUICore:ApplyFrameMixin(to)
-    for k, v in pairs(FrameMixin) do to[k] = v end
-end
+function PandaUICore:ApplyFrameMixin(to) PandaUICore:ApplyMixin(to, FrameMixin); end

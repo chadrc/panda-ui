@@ -24,6 +24,10 @@ local framesToHide = {
     StanceBarFrame = {}
 }
 
+function PandaUICore:ApplyMixin(to, mixin)
+    for k, v in pairs(mixin or {}) do to[k] = v end
+end
+
 function PandaUICore:ToggleUI()
     if InCombatLockdown() then return end
     if self.showingBlizzardUI then
@@ -182,8 +186,10 @@ function PandaUICore:CreateFrame(name, details, children)
     end
 
     frame.events = d.events;
+    frame.props = d.props;
 
     PandaUICore:ApplyFrameMixin(frame);
+    PandaUICore:ApplyMixin(frame, d.mixin);
 
     return frame;
 end
