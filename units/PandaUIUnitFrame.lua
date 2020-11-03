@@ -94,7 +94,6 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
 
     local function Setup(frame)
         local info = PandaUIUnits:GetUnitInfo(unit);
-        print("setup", info ~= nil);
 
         frame.refs.cast:SetValue(0);
         frame:SetScript("OnUpdate", nil);
@@ -244,7 +243,6 @@ function PandaUIUnits:TargetFrame(vars)
         local info = PandaUIUnits:GetUnitInfo("target");
         local playerInCombat = InCombatLockdown();
 
-        print("new target", info ~= nil);
         frame:SetupUnit();
 
         if info then
@@ -266,7 +264,6 @@ function PandaUIUnits:TargetFrame(vars)
     details.events.PLAYER_TARGET_CHANGED = SetupTarget;
     details.events.PLAYER_REGEN_DISABLED =
         function(frame)
-            print('regen', UnitExists(unit))
             -- try to catch before combat and show target frame
             if not UnitExists(unit) and not InCombatLockdown() then
                 frame.details.hidden = false;
