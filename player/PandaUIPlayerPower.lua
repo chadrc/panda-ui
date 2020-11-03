@@ -80,6 +80,11 @@ local classPowers = {
         MakePowerInfo("HOLY_POWER", "MANA"), -- Holy
         MakePowerInfo("HOLY_POWER", "MANA"), -- Protection
         MakePowerInfo("HOLY_POWER", "MANA") -- Retribution
+    },
+    PRIEST = {
+        MakePowerInfo("MANA"), -- Discipline 
+        MakePowerInfo("MANA"), -- Holy
+        MakePowerInfo("INSANITY", "MANA") -- Shadow
     }
 }
 
