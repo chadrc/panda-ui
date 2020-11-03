@@ -109,25 +109,6 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     local function Setup(frame)
         local info = PandaUIUnits:GetUnitInfo(unit);
 
-        -- set description text
-        local classification =
-            ClassificationLabels[info.classification or ""] or "";
-
-        local level = info.level or -1;
-        if level == -1 then level = "??" end
-        if classification ~= "" then level = level .. " "; end
-
-        local description = string.format("(%s%s) %s", level, classification,
-                                          info.name or "");
-
-        -- Compare size to frame size
-        if string.len(description) > 10 then
-            description = string.sub(description, 0, 14) .. "...";
-        end
-
-        frame.refs.description.details.text.text = description;
-        frame.refs.description:UpdateStyles();
-
         frame.refs.cast:SetValue(0);
         frame:SetScript("OnUpdate", nil);
         -- Check for casting and channeling on new unit
@@ -160,6 +141,32 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
 
     local function Update(frame)
         local info = PandaUIUnits:GetUnitInfo(unit);
+
+        -- set description text
+        local classification =
+            ClassificationLabels[info.classification or ""] or "";
+
+        -- allow level to be specified by creator of frame
+        local level = frame.level or info.level or -1;
+        if level == -1 then level = "??" end
+        if classification ~= "" then level = level .. " "; end
+
+        local description = string.format("(%s%s) %s", level, classification,
+                                          info.name or "");
+
+        -- Compare size to frame size
+        if string.len(description) > 10 then
+            description = string.sub(description, 0, 14) .. "...";
+        end
+
+        frame.refs.description.details.text.text = description;
+        frame.refs.description:UpdateStyles();
+
+        -- Compare size to frame size
+        if string.len(description) > 10 then
+            description = string.sub(description, 0, 14) .. "...";
+        end
+
         if not info.exists or info.dead then
             frame.refs.health:SetValue(1);
             frame.refs.power:SetValue(1);
@@ -235,7 +242,8 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                 UNIT_SPELLCAST_INTERRUPTED = EndCast,
                 UNIT_SPELLCAST_CHANNEL_START = InitChannel,
                 UNIT_SPELLCAST_CHANNEL_UPDATE = InitChannel,
-                UNIT_SPELLCAST_CHANNEL_STOP = EndCast
+                UNIT_SPELLCAST_CHANNEL_STOP = EndCast,
+                UNIT_LEVEL = Update
             }
         },
         events = {},
@@ -285,20 +293,23 @@ function PandaUIUnits:TargetFrame(vars)
         local info = PandaUIUnits:GetUnitInfo("target");
         local playerInCombat = InCombatLockdown();
 
-        frame:SetupUnit();
-
         if info.exists then
             if not playerInCombat then frame.details.hidden = false; end
 
+            print(info.isFriend, " - ", info.isEnemy);
             if info.isFriend then
                 frame.backgroundColor = {r = 0, g = .5, b = 0, a = .4};
-            else
+            elseif info.isEnemy then
                 frame.backgroundColor = {r = .5, g = 0, b = 0, a = .4};
+            else
+                -- let frame use its default
+                frame.backgroundColor = nil;
             end
         elseif not playerInCombat then
             frame.details.hidden = true;
         end
 
+        frame:SetupUnit();
         frame:UpdateStyles();
     end
 
@@ -343,6 +354,16 @@ function PandaUIUnits:PlayerFrame(vars)
         xOfs = 0,
         yOfs = -200
     }, vars.Player, "position");
+
+    details.events.PLAYER_LEVEL_UP = function(frame, level)
+        frame.level = level;
+        frame:UpdateUnit();
+    end
+    details.events.PLAYER_LEVEL_CHANGED =
+        function(frame, oldLevel, newLevel)
+            frame.level = newLevel;
+            frame:UpdateUnit();
+        end
 
     return details;
 end

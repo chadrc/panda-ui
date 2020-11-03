@@ -124,6 +124,10 @@ function PandaUICore:CreateFrame(name, details, children)
         frame:SetMovable(d.movable);
     end
 
+    -- Probably won't need to set this more than once
+    -- only set here to avoid it being set in combat
+    if d.frameLevel then frame:SetFrameLevel(d.frameLevel); end
+
     if d.attributes then
         for k, v in pairs(d.attributes) do
             -- print('attr: ', k, " = ", v);

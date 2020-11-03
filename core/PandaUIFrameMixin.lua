@@ -63,8 +63,6 @@ function FrameMixin:UpdateStyles()
 
     SetCommonDetails(self, d, p);
 
-    if d.frameLevel then self:SetFrameLevel(d.frameLevel); end
-
     if d.texture then
         if not self.texture then
             self.texture = self:CreateTexture(self:GetName() .. "Texture");

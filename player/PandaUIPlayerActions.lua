@@ -159,6 +159,7 @@ function PandaUIPlayer:Actions()
                     PLAYER_SPECIALIZATION_CHANGED = SetupActionButtons,
                     ACTIONBAR_UPDATE_STATE = UpdateActionButtons,
                     ACTIONBAR_PAGE_CHANGED = SetupActionButtons,
+                    ACTIONBAR_SLOT_CHANGED = SetupActionButtons,
                     PLAYER_TARGET_CHANGED = function(frame)
                         if UnitExists("target") and not frame.hasTarget then
                             -- new target register update event to watch range changes
