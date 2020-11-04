@@ -28,7 +28,6 @@ function UnitHealthFrameMixin:Update()
     else
         self.refs.healPrediction.details.hidden = true;
     end
-    self.refs.healPrediction._debug = true
     self.refs.healPrediction:UpdateStyles();
 
     self.refs.status:SetMinMaxValues(0, max);
