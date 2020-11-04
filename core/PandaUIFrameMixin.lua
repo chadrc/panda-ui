@@ -15,12 +15,17 @@ function FrameMixin:Init()
     for _, childFrame in pairs(self.childFrames) do childFrame:Init() end
 end
 
+function PandaUIFrame_SetAnchor(self, p, anchor)
+    local a = anchor or PandaUICore:anchor();
+    self:ClearAllPoints();
+    self:SetPoint(a.base, p, a.relative, a.offsetX, a.offsetY);
+end
+
 local function SetCommonDetails(self, d, p)
     self:SetParent(p);
 
     local width = p:GetWidth();
     local height = p:GetHeight();
-    local anchor = PandaUICore:anchor();
 
     if not d.width or d.width.type ~= "auto" then
         local width = ExtractValue(d.width, width) or width;
@@ -34,10 +39,7 @@ local function SetCommonDetails(self, d, p)
         self:SetHeight(height);
     end
 
-    local anchor = d.anchor or anchor;
-    self:ClearAllPoints();
-    self:SetPoint(anchor.base, p, anchor.relative, anchor.offsetX,
-                  anchor.offsetY);
+    PandaUIFrame_SetAnchor(self, p, d.anchor);
 
     self:SetAlpha(d.alpha or 1.0);
 
@@ -51,6 +53,10 @@ end
 
 function FrameMixin:SetBackgroundColor(clr)
     self:SetBackdropColor(clr.r, clr.g, clr.b, clr.a);
+end
+
+function FrameMixin:SetAnchor(anchor)
+    PandaUIFrame_SetAnchor(self, self:GetParent(), anchor);
 end
 
 -- deprecated, switching to this being a on off use for creation

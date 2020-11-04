@@ -208,23 +208,24 @@ function PandaUIPlayer:PlayerPowerFrame()
         self.powerInfo = GetPowerInfo(self.playerClass, newSpec);
 
         local pClr = self.powerInfo.primary.color;
-        frame.refs.primaryPower.statusBarTexture:SetColorTexture(pClr.r, pClr.g,
-                                                                 pClr.b, pClr.a);
+        frame.refs.primaryPower:Setup(self.powerInfo.primary);
+        -- frame.refs.primaryPower.statusBarTexture:SetColorTexture(pClr.r, pClr.g,
+        --                                                          pClr.b, pClr.a);
 
-        frame.refs.secondaryPower.details.hidden = not self.powerInfo.secondary;
+        -- frame.refs.secondaryPower.details.hidden = not self.powerInfo.secondary;
 
-        local sClr = self.powerInfo:GetSecondaryColor();
-        if sClr then
-            frame.refs.secondaryPower.statusBarTexture:SetColorTexture(sClr.r,
-                                                                       sClr.g,
-                                                                       sClr.b,
-                                                                       sClr.a);
-        end
+        -- local sClr = self.powerInfo:GetSecondaryColor();
+        -- if sClr then
+        --     frame.refs.secondaryPower.statusBarTexture:SetColorTexture(sClr.r,
+        --                                                                sClr.g,
+        --                                                                sClr.b,
+        --                                                                sClr.a);
+        -- end
 
-        ForcePrimary(frame.refs.primaryPower);
-        ForceSecondary(frame.refs.secondaryPower);
+        -- ForcePrimary(frame.refs.primaryPower);
+        -- ForceSecondary(frame.refs.secondaryPower);
 
-        frame:UpdateLayout();
+        -- frame:UpdateLayout();
     end
 
     return {
@@ -232,60 +233,67 @@ function PandaUIPlayer:PlayerPowerFrame()
         ref = "power",
         childLayout = {direction = "vertical"},
         children = {
-            PandaUICore:StatusBar({
-                name = "SecondaryPower",
-                ref = "secondaryPower",
-                hidden = not self.powerInfo.secondary,
-                statusBar = {color = self.powerInfo:GetSecondaryColor()},
-                events = {
-                    UNIT_POWER_FREQUENT = SecondaryPower,
-                    PLAYER_ENTERING_WORLD = ForceSecondary,
-                    UNIT_DISPLAYPOWER = ForceSecondary
-                },
-                children = {
-                    {
-                        name = "CostPrediction",
-                        ref = "costPrediction",
-                        hidden = true,
-                        anchor = PandaUICore:anchor("RIGHT"),
-                        height = PandaUICore:pct(1),
-                        width = PandaUICore:val(50),
-                        backgroundColor = {r = 0, g = 0, b = 0, a = .5}
-                    }
-                }
-            }), PandaUICore:StatusBar({
+            -- PandaUICore:StatusBar({
+            --     name = "SecondaryPower",
+            --     ref = "secondaryPower",
+            --     hidden = not self.powerInfo.secondary,
+            --     statusBar = {color = self.powerInfo:GetSecondaryColor()},
+            --     events = {
+            --         UNIT_POWER_FREQUENT = SecondaryPower,
+            --         PLAYER_ENTERING_WORLD = ForceSecondary,
+            --         UNIT_DISPLAYPOWER = ForceSecondary
+            --     },
+            --     children = {
+            --         {
+            --             name = "CostPrediction",
+            --             ref = "costPrediction",
+            --             hidden = true,
+            --             anchor = PandaUICore:anchor("RIGHT"),
+            --             height = PandaUICore:pct(1),
+            --             width = PandaUICore:val(50),
+            --             backgroundColor = {r = 0, g = 0, b = 0, a = .5}
+            --         }
+            --     }
+            -- }), PandaUICore:StatusBar({
+            --     name = "PrimaryPower",
+            --     ref = "primaryPower",
+            --     layout = {parts = 2},
+            --     statusBar = {color = self.powerInfo.primary.color},
+            --     events = {
+            --         UNIT_POWER_FREQUENT = PrimaryPower,
+            --         PLAYER_ENTERING_WORLD = ForcePrimary,
+            --         UNIT_DISPLAYPOWER = ForcePrimary
+            --     },
+            --     children = {
+            --         {
+            --             name = "CostPrediction",
+            --             ref = "costPrediction",
+            --             hidden = true,
+            --             anchor = PandaUICore:anchor("RIGHT"),
+            --             height = PandaUICore:pct(1),
+            --             width = PandaUICore:val(50),
+            --             backgroundColor = {r = 0, g = 0, b = 0, a = .5},
+            --             events = {
+            --                 UNIT_SPELLCAST_START = StartPrediction,
+            --                 UNIT_SPELLCAST_STOP = EndPrediction,
+            --                 UNIT_SPELLCAST_FAILED = EndPrediction,
+            --                 UNIT_SPELLCAST_SUCCEEDED = EndPrediction
+            --             }
+            --         }
+            --     }
+            -- }), 
+            PandaUICore:Merge(PandaUIUnits:UnitPowerFrame("player",
+                                                          self.powerInfo.primary),
+                              {
                 name = "PrimaryPower",
                 ref = "primaryPower",
-                layout = {parts = 2},
-                statusBar = {color = self.powerInfo.primary.color},
-                events = {
-                    UNIT_POWER_FREQUENT = PrimaryPower,
-                    PLAYER_ENTERING_WORLD = ForcePrimary,
-                    UNIT_DISPLAYPOWER = ForcePrimary
-                },
-                children = {
-                    {
-                        name = "CostPrediction",
-                        ref = "costPrediction",
-                        hidden = true,
-                        anchor = PandaUICore:anchor("RIGHT"),
-                        height = PandaUICore:pct(1),
-                        width = PandaUICore:val(50),
-                        backgroundColor = {r = 0, g = 0, b = 0, a = .5},
-                        events = {
-                            UNIT_SPELLCAST_START = StartPrediction,
-                            UNIT_SPELLCAST_STOP = EndPrediction,
-                            UNIT_SPELLCAST_FAILED = EndPrediction,
-                            UNIT_SPELLCAST_SUCCEEDED = EndPrediction
-                        }
-                    }
-                }
+                layout = {parts = 2}
             })
         },
         events = {
-            PLAYER_ENTERING_WORLD = Init,
-            ACTIVE_TALENT_GROUP_CHANGED = Init,
-            UPDATE_SHAPESHIFT_FORM = Init
+            PLAYER_ENTERING_WORLD = Init
+            -- ACTIVE_TALENT_GROUP_CHANGED = Init,
+            -- UPDATE_SHAPESHIFT_FORM = Init
         }
     }
 end

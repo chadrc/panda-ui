@@ -45,6 +45,11 @@ local framesToHide = {
 }
 
 function PandaUICore:Print(t)
+    if type(t) ~= "table" then
+        print(t);
+        return
+    end
+
     local strs = {};
     for k, v in pairs(t) do
         table.insert(strs, string.format("%s = %s", tostring(k), tostring(v)));
@@ -153,6 +158,7 @@ function PandaUICore:CreateFrame(name, details, children)
     local root = self.rootFrame;
     d.parent = d.parent or root;
     local n = name;
+
     if n then
         n = d.parent:GetName() .. n;
     else
@@ -167,6 +173,9 @@ function PandaUICore:CreateFrame(name, details, children)
     if tmp then table.insert(templates, tmp); end
 
     local frame = CreateFrame(t, n, d.parent, table.concat(templates, ","));
+    PandaUICore:ApplyFrameMixin(frame);
+    PandaUICore:ApplyMixin(frame, d.mixin);
+
     frame.details = d;
     frame.refs = {};
     if d.movable then
@@ -234,9 +243,6 @@ function PandaUICore:CreateFrame(name, details, children)
     frame.events = d.events;
     frame.props = d.props;
 
-    PandaUICore:ApplyFrameMixin(frame);
-    PandaUICore:ApplyMixin(frame, d.mixin);
-
     return frame;
 end
 
@@ -273,11 +279,11 @@ function PandaUICore:StatusBar(details)
         frame:SetValue(0);
         frame:SetReverseFill(statusDetails.reverse or false);
 
-        function frame:SetStatusBarColor(color)
+        function frame:SetStatusColor(color)
             local clr = color or {r = 1.0, g = 1.0, b = 1.0, a = 1.0};
             texture:SetColorTexture(clr.r, clr.g, clr.b, clr.a);
         end
-        frame:SetStatusBarColor(statusDetails.color)
+        frame:SetStatusColor(statusDetails.color)
 
         if orgInit then orgInit(frame); end
     end

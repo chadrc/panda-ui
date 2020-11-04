@@ -1,49 +1,48 @@
-local function PositionPrediction(frame, max, current)
-    if not frame.predictedPowerCost then return end
+local UnitPowerFrameMixin = {};
 
-    local parentWidth = frame:GetParent():GetWidth();
+function UnitPowerFrameMixin:PositionPrediction(max, current)
+    if not self.predictedPowerCost then return end
 
-    local predictedPercent = frame.predictedPowerCost / max;
-    frame.details.width = PandaUICore:val(predictedPercent * parentWidth);
+    local parentWidth = self.refs.costPrediction:GetParent():GetWidth();
+
+    local predictedPercent = self.predictedPowerCost / max;
+    self.refs.costPrediction:SetWidth(predictedPercent * parentWidth);
 
     local missingPercent = (max - current) / max;
-    frame.details.anchor = PandaUICore:anchor("RIGHT", "RIGHT",
-                                              -missingPercent * parentWidth, -1);
 
-    frame:UpdateStyles();
+    self.refs.costPrediction:SetAnchor(PandaUICore:anchor("RIGHT", "RIGHT",
+                                                          -missingPercent *
+                                                              parentWidth, -1));
+
 end
-
-local UnitPowerFrameMixin = {};
 
 function UnitPowerFrameMixin:Update(unit, type)
     local powerType = PowerTokenByLabel[type];
 
-    print('power', type, ' - ', self.props.powerInfo.label)
     if powerType == self.props.powerInfo.token then
         local max = UnitPowerMax(unit, powerType);
         local current = UnitPower(unit, powerType);
 
-        print(max, ' - ', current);
-        self.refs.status:SetMinMaxValues(0, 1);
-        self.refs.status:SetValue(.25);
+        self.refs.status:SetMinMaxValues(0, max);
+        self.refs.status:SetValue(current);
 
-        -- PositionPrediction(self.refs.costPrediction, max, current);
+        self:PositionPrediction(max, current);
     end
 end
 
-function UnitPowerFrameMixin:Init(powerInfo)
+function UnitPowerFrameMixin:Setup(powerInfo)
     if powerInfo then self.props.powerInfo = powerInfo; end
 
     local pClr = self.props.powerInfo.color;
-    PandaUICore:Print(pClr);
-    self.refs.status:SetStatusBarColor(nil);
+    self.refs.status:SetStatusColor(pClr);
 
     self:Update(self.props.unit, self.props.powerInfo.label);
 end
 
-function UnitPowerFrameMixin:StartPrediction(unit)
+function UnitPowerFrameMixin:StartPrediction()
+    local unit = self.props.unit;
     local name, text, texture, startTime, endTime, isTradeSkill, castID,
-          notInterruptible, spellID = UnitCastingInfo(self.props.unit);
+          notInterruptible, spellID = UnitCastingInfo(unit);
 
     local powerType = self.props.powerInfo.token;
     local cost = 0;
@@ -57,29 +56,27 @@ function UnitPowerFrameMixin:StartPrediction(unit)
 
     if cost ~= 0 then
         self.predictedPowerCost = cost;
-        self.details.hidden = false;
+        self.refs.costPrediction:Show();
 
         local max = UnitPowerMax(unit, powerType);
         local current = UnitPower(unit, powerType);
 
-        PositionPrediction(self, max, current);
+        self:PositionPrediction(max, current);
     end
 end
 
 function UnitPowerFrameMixin:EndPrediction(unit)
-    print('end predict')
     self.predictedPowerCost = nil;
-    self.details.width = PandaUICore:val(0);
-    self.details.hidden = true;
 
-    self:UpdateStyles();
+    self.refs.costPrediction:SetWidth(0);
+    self.refs.costPrediction:Hide();
 end
 
 -- End Mixin
 
 function PandaUIUnits:UnitPowerFrame(unit, powerInfo)
-    local function Init(frame) frame:Init() end
-    local function Update(frame) frame:Update() end
+    local function Init(frame) frame:Setup() end
+    local function Update(frame, unit, type) frame:Update(unit, type) end
     local function StartPrediction(frame) frame:StartPrediction() end
     local function EndPrediction(frame) frame:EndPrediction() end
 
@@ -91,9 +88,9 @@ function PandaUIUnits:UnitPowerFrame(unit, powerInfo)
             {
                 name = "Background",
                 ref = "background",
-                backgroundColor = PandaUICore:FadeBy(powerInfo.color, .25)
+                backgroundColor = PandaUICore:FadeBy(powerInfo.color, .05)
             }, PandaUICore:StatusBar({
-                name = "Status",
+                name = "PowerStatus",
                 ref = "status",
                 statusBar = {color = powerInfo.color},
                 children = {
@@ -116,11 +113,11 @@ function PandaUIUnits:UnitPowerFrame(unit, powerInfo)
             unit = unit,
             events = {
                 UNIT_POWER_FREQUENT = Update,
-                UNIT_DISPLAYPOWER = Update
-                -- UNIT_SPELLCAST_START = StartPrediction,
-                -- UNIT_SPELLCAST_STOP = EndPrediction,
-                -- UNIT_SPELLCAST_FAILED = EndPrediction,
-                -- UNIT_SPELLCAST_SUCCEEDED = EndPrediction
+                UNIT_DISPLAYPOWER = Init,
+                UNIT_SPELLCAST_START = StartPrediction,
+                UNIT_SPELLCAST_STOP = EndPrediction,
+                UNIT_SPELLCAST_FAILED = EndPrediction,
+                UNIT_SPELLCAST_SUCCEEDED = EndPrediction
             }
         }
     }
