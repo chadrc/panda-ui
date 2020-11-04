@@ -22,7 +22,11 @@ function UnitPowerFrameMixin:Update(unit, type)
     local max = UnitPowerMax(unit, powerType)
     local current = UnitPower(unit, powerType)
 
-    self.refs.status:SetValue(current / max)
+    if max == 0 then
+      self.refs.status:SetValue(0)
+    else
+      self.refs.status:SetValue(current / max)
+    end
 
     self:PositionPrediction(max, current)
   end
@@ -31,6 +35,10 @@ end
 function UnitPowerFrameMixin:MakeInactive()
   self.refs.status:SetStatusColor(PandaUIUnits.InactiveColor)
   self.refs.status:SetValue(1)
+end
+
+function UnitPowerFrameMixin:MakeActive()
+  self:Setup()
 end
 
 function UnitPowerFrameMixin:Setup(powerInfo)

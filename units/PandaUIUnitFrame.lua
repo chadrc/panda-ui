@@ -123,6 +123,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
       frame:SetAlpha(1.0)
       frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor)
       frame.refs.health:MakeActive()
+      frame.refs.power:MakeActive()
     end
 
     frame:UpdateUnit()
