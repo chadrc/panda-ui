@@ -33,8 +33,7 @@ function UnitHealthFrameMixin:Update()
   end
   self.refs.healPrediction:UpdateStyles()
 
-  self.refs.status:SetMinMaxValues(0, max)
-  self.refs.status:SetValue(cur)
+  self.refs.status:SetValue(cur / max)
 end
 
 function UnitHealthFrameMixin:CheckForStagger(frame)
@@ -71,12 +70,12 @@ end
 
 function UnitHealthFrameMixin:MakeInactive()
   self.refs.status:SetStatusColor(PandaUIUnits.InactiveColor)
-  self:SetBackgroundColor(PandaUIUnits.InactiveColor)
+  self.refs.status:SetValue(1)
 end
 
 function UnitHealthFrameMixin:MakeActive()
   self.refs.status:SetStatusColor(DefaultHealthColor)
-  self:SetBackgroundColor(PandaUICore:FadeBy(DefaultHealthColor, PandaUIUnits.BackgroundAlpha))
+  self:Update()
 end
 
 function PandaUIUnits:UnitHealthFrame(unit, reverseFill)
