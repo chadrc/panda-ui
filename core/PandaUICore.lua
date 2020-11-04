@@ -1,3 +1,23 @@
+PowerTokenByLabel = {
+    MANA = Enum.PowerType.Mana,
+    RAGE = Enum.PowerType.Rage,
+    FOCUS = Enum.PowerType.Focus,
+    ENERGY = Enum.PowerType.Energy,
+    COMBO_POINTS = Enum.PowerType.ComboPoints,
+    RUNES = Enum.PowerType.Runes,
+    RUNIC_POWER = Enum.PowerType.RunicPower,
+    SOUL_SHARDS = Enum.PowerType.SoulShards,
+    LUNAR_POWER = Enum.PowerType.LunarPower,
+    HOLY_POWER = Enum.PowerType.HolyPower,
+    ALTERNATE = Enum.PowerType.Alternate,
+    MAELSTROM = Enum.PowerType.Maelstrom,
+    CHI = Enum.PowerType.Chi,
+    ARCANE_CHARGES = Enum.PowerType.ArcaneCharges,
+    FURY = Enum.PowerType.Fury,
+    PAIN = Enum.PowerType.Pain,
+    INSANITY = Enum.PowerType.Insanity
+};
+
 PandaUICore = {
     hider = CreateFrame("Frame"),
     showingBlizzardUI = true,
@@ -24,8 +44,34 @@ local framesToHide = {
     StanceBarFrame = {}
 }
 
+function PandaUICore:Print(t)
+    local strs = {};
+    for k, v in pairs(t) do
+        table.insert(strs, string.format("%s = %s", tostring(k), tostring(v)));
+    end
+    print(table.concat(strs, ", "))
+end
+
 function PandaUICore:ApplyMixin(to, mixin)
     for k, v in pairs(mixin or {}) do to[k] = v end
+end
+
+function PandaUICore:Merge(left, right)
+    PandaUICore:ApplyMixin(left, right);
+    return left;
+end
+
+function PandaUICore:Clone(t)
+    local n = {};
+    for k, v in pairs(t) do n[k] = v end
+    return n
+end
+
+function PandaUICore:FadeBy(clr, by)
+    local new = PandaUICore:Clone(clr);
+    new.a = new.a or 1.0;
+    new.a = new.a * by;
+    return new;
 end
 
 function PandaUICore:ToggleUI()

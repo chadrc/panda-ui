@@ -42,19 +42,6 @@ local ClassificationLabels = {
     minus = "C"
 };
 
-function Clone(t)
-    local n = {};
-    for k, v in pairs(t) do n[k] = v end
-    return n
-end
-
-local function FadeBy(clr, by)
-    local new = Clone(clr);
-    new.a = new.a or 1.0;
-    new.a = new.a * by;
-    return new;
-end
-
 local BackgroundAlpha = .5;
 local InactiveColor = {r = .5, g = .5, b = .5};
 local DefaultBackgroundColor = {r = .5, g = .5, b = .5, a = BackgroundAlpha};
@@ -122,7 +109,8 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             frame.refs.power:SetValue(1);
             frame.refs.health:SetStatusBarColor(InactiveColor);
             frame.refs.power:SetStatusBarColor(InactiveColor);
-            frame:SetBackgroundColor(FadeBy(InactiveColor, BackgroundAlpha));
+            frame:SetBackgroundColor(PandaUICore:FadeBy(InactiveColor,
+                                                        BackgroundAlpha));
             frame:SetAlpha(.5);
             return
         end
