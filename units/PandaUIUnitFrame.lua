@@ -110,16 +110,18 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
       InitChannel(frame, unit)
     end
 
+    frame.refs.health:Update()
+    frame.refs.power:Setup()
+
     if not info.exists or info.dead then
       frame.casting = false
       frame.channeling = false
       frame:SetBackgroundColor(PandaUICore:FadeBy(InactiveColor, BackgroundAlpha))
       frame:SetAlpha(.5)
-      return
+    else
+      frame:SetAlpha(1.0)
+      frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor)
     end
-
-    frame:SetAlpha(1.0)
-    frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor)
 
     frame:UpdateUnit()
   end
@@ -184,7 +186,12 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
           --       statusBar = {color = DefaultHealthColor}
           --     }
           --   ),
-          PandaUIUnits:UnitPowerFrame(unit)
+          PandaUICore:Merge(
+            PandaUIUnits:UnitPowerFrame(unit),
+            {
+              ref = "power"
+            }
+          )
 
           --   PandaUICore:StatusBar(
           --     {
