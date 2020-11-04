@@ -212,8 +212,11 @@ function PandaUIPlayer:PlayerPowerFrame()
         -- frame.refs.primaryPower.statusBarTexture:SetColorTexture(pClr.r, pClr.g,
         --                                                          pClr.b, pClr.a);
 
-        -- frame.refs.secondaryPower.details.hidden = not self.powerInfo.secondary;
+        frame.refs.secondaryPower.details.hidden = not self.powerInfo.secondary;
 
+        if self.powerInfo.secondary then
+            frame.refs.secondaryPower:Setup(self.powerInfo.secondary);
+        end
         -- local sClr = self.powerInfo:GetSecondaryColor();
         -- if sClr then
         --     frame.refs.secondaryPower.statusBarTexture:SetColorTexture(sClr.r,
@@ -225,9 +228,12 @@ function PandaUIPlayer:PlayerPowerFrame()
         -- ForcePrimary(frame.refs.primaryPower);
         -- ForceSecondary(frame.refs.secondaryPower);
 
-        -- frame:UpdateLayout();
+        -- Update to use direct updates for secure frames
+        frame:UpdateLayout();
     end
 
+    local hideSecondary = not self.powerInfo.secondary;
+    local secondary = self.powerInfo.secondary or MakeSinglePowerInfo("MANA");
     return {
         name = "Power",
         ref = "power",
@@ -282,18 +288,23 @@ function PandaUIPlayer:PlayerPowerFrame()
             --         }
             --     }
             -- }), 
-            PandaUICore:Merge(PandaUIUnits:UnitPowerFrame("player",
-                                                          self.powerInfo.primary),
+            PandaUICore:Merge(PandaUIUnits:UnitPowerFrame("player", secondary),
                               {
+                name = "SecondaryPower",
+                ref = "secondaryPower",
+                hidden = hideSecondary
+            }), PandaUICore:Merge(PandaUIUnits:UnitPowerFrame("player",
+                                                              self.powerInfo
+                                                                  .primary), {
                 name = "PrimaryPower",
                 ref = "primaryPower",
                 layout = {parts = 2}
             })
         },
         events = {
-            PLAYER_ENTERING_WORLD = Init
-            -- ACTIVE_TALENT_GROUP_CHANGED = Init,
-            -- UPDATE_SHAPESHIFT_FORM = Init
+            PLAYER_ENTERING_WORLD = Init,
+            ACTIVE_TALENT_GROUP_CHANGED = Init,
+            UPDATE_SHAPESHIFT_FORM = Init
         }
     }
 end
