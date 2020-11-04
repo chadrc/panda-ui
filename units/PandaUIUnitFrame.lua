@@ -107,8 +107,8 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             frame.channeling = false;
             frame.refs.health:SetValue(1);
             frame.refs.power:SetValue(1);
-            frame.refs.health:SetStatusBarColor(InactiveColor);
-            frame.refs.power:SetStatusBarColor(InactiveColor);
+            frame.refs.health:SetStatusColor(InactiveColor);
+            frame.refs.power:SetStatusColor(InactiveColor);
             frame:SetBackgroundColor(PandaUICore:FadeBy(InactiveColor,
                                                         BackgroundAlpha));
             frame:SetAlpha(.5);
@@ -118,8 +118,8 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         frame:SetAlpha(1.0);
         frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor);
 
-        frame.refs.health:SetStatusBarColor(DefaultHealthColor);
-        frame.refs.power:SetStatusBarColor(DefaultPowerColor);
+        frame.refs.health:SetStatusColor(DefaultHealthColor);
+        frame.refs.power:SetStatusColor(DefaultPowerColor);
 
         frame:UpdateUnit();
     end
