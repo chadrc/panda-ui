@@ -113,10 +113,6 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     if not info.exists or info.dead then
       frame.casting = false
       frame.channeling = false
-      --   frame.refs.health:SetValue(1)
-      frame.refs.power:SetValue(1)
-      --   frame.refs.health:SetStatusColor(InactiveColor)
-      frame.refs.power:SetStatusColor(InactiveColor)
       frame:SetBackgroundColor(PandaUICore:FadeBy(InactiveColor, BackgroundAlpha))
       frame:SetAlpha(.5)
       return
@@ -124,9 +120,6 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
 
     frame:SetAlpha(1.0)
     frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor)
-
-    -- frame.refs.health:SetStatusColor(DefaultHealthColor)
-    frame.refs.power:SetStatusColor(DefaultPowerColor)
 
     frame:UpdateUnit()
   end
@@ -154,13 +147,6 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     end
 
     frame.refs.description.text:SetText(description)
-
-    if not info.exists or info.dead then
-      frame.refs.power:SetValue(1)
-      return
-    end
-
-    frame.refs.power:SetValue(info.power / info.maxPower)
   end
 
   return {
@@ -198,13 +184,15 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
           --       statusBar = {color = DefaultHealthColor}
           --     }
           --   ),
-          PandaUICore:StatusBar(
-            {
-              name = "Power",
-              ref = "power",
-              statusBar = {color = DefaultPowerColor}
-            }
-          )
+          PandaUIUnits:UnitPowerFrame(unit)
+
+          --   PandaUICore:StatusBar(
+          --     {
+          --       name = "Power",
+          --       ref = "power",
+          --       statusBar = {color = DefaultPowerColor}
+          --     }
+          --   )
         },
         init = function(frame)
           local button = CreateFrame("Button", frame:GetName() .. "UnitButton", frame, "SecureUnitButtonTemplate")
