@@ -44,12 +44,11 @@ local ClassificationLabels = {
   minus = "C"
 }
 
-local BackgroundAlpha = .5
-local InactiveColor = {r = .5, g = .5, b = .5}
-local DefaultBackgroundColor = {r = .5, g = .5, b = .5, a = BackgroundAlpha}
+PandaUIUnits.BackgroundAlpha = .5
+PandaUIUnits.InactiveColor = {r = .5, g = .5, b = .5}
+
+local DefaultBackgroundColor = {r = .5, g = .5, b = .5, a = PandaUIUnits.BackgroundAlpha}
 local DefaultCastColor = {r = .8, g = .8, b = .8, a = .75}
-local DefaultHealthColor = {r = 0, g = .8, b = 0}
-local DefaultPowerColor = {r = 0, g = 0, b = .8}
 
 function PandaUIUnits:UnitFrame(unit, dropDownMenu)
   local function UpdateCastBars(frame)
@@ -116,11 +115,14 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     if not info.exists or info.dead then
       frame.casting = false
       frame.channeling = false
-      frame:SetBackgroundColor(PandaUICore:FadeBy(InactiveColor, BackgroundAlpha))
+      frame:SetBackgroundColor(PandaUICore:FadeBy(PandaUIUnits.InactiveColor, PandaUIUnits.BackgroundAlpha))
       frame:SetAlpha(.5)
+      frame.refs.health:MakeInactive()
+      frame.refs.power:MakeInactive()
     else
       frame:SetAlpha(1.0)
       frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor)
+      frame.refs.health:MakeActive()
     end
 
     frame:UpdateUnit()
@@ -178,28 +180,12 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
               layout = {parts = 9}
             }
           ),
-          --   PandaUICore:StatusBar(
-          --     {
-          --       name = "Health",
-          --       ref = "health",
-          --       layout = {parts = 9},
-          --       statusBar = {color = DefaultHealthColor}
-          --     }
-          --   ),
           PandaUICore:Merge(
             PandaUIUnits:UnitPowerFrame(unit),
             {
               ref = "power"
             }
           )
-
-          --   PandaUICore:StatusBar(
-          --     {
-          --       name = "Power",
-          --       ref = "power",
-          --       statusBar = {color = DefaultPowerColor}
-          --     }
-          --   )
         },
         init = function(frame)
           local button = CreateFrame("Button", frame:GetName() .. "UnitButton", frame, "SecureUnitButtonTemplate")

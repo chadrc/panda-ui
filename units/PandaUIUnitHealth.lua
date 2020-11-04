@@ -1,5 +1,7 @@
 local UnitHealthFrameMixin = {}
 
+local DefaultHealthColor = {r = 0, g = .8, b = 0}
+
 function UnitHealthFrameMixin:Update()
   local max = UnitHealthMax(self.props.unit)
   local cur = UnitHealth(self.props.unit)
@@ -65,6 +67,16 @@ function UnitHealthFrameMixin:CheckForStagger(frame)
   else
     self:SetScript("OnUpdate", nil)
   end
+end
+
+function UnitHealthFrameMixin:MakeInactive()
+  self.refs.status:SetStatusColor(PandaUIUnits.InactiveColor)
+  self:SetBackgroundColor(PandaUIUnits.InactiveColor)
+end
+
+function UnitHealthFrameMixin:MakeActive()
+  self.refs.status:SetStatusColor(DefaultHealthColor)
+  self:SetBackgroundColor(PandaUICore:FadeBy(DefaultHealthColor, PandaUIUnits.BackgroundAlpha))
 end
 
 function PandaUIUnits:UnitHealthFrame(unit, reverseFill)

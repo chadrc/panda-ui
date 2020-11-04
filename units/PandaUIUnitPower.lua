@@ -29,6 +29,11 @@ function UnitPowerFrameMixin:Update(unit, type)
   end
 end
 
+function UnitPowerFrameMixin:MakeInactive()
+  self.refs.status:SetStatusColor(PandaUIUnits.InactiveColor)
+  self.refs.background:SetBackgroundColor(PandaUIUnits.InactiveColor)
+end
+
 function UnitPowerFrameMixin:Setup(powerInfo)
   if powerInfo then
     self.props.powerInfo = powerInfo
