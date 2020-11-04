@@ -113,9 +113,9 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     if not info.exists or info.dead then
       frame.casting = false
       frame.channeling = false
-      frame.refs.health:SetValue(1)
+      --   frame.refs.health:SetValue(1)
       frame.refs.power:SetValue(1)
-      frame.refs.health:SetStatusColor(InactiveColor)
+      --   frame.refs.health:SetStatusColor(InactiveColor)
       frame.refs.power:SetStatusColor(InactiveColor)
       frame:SetBackgroundColor(PandaUICore:FadeBy(InactiveColor, BackgroundAlpha))
       frame:SetAlpha(.5)
@@ -125,7 +125,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     frame:SetAlpha(1.0)
     frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor)
 
-    frame.refs.health:SetStatusColor(DefaultHealthColor)
+    -- frame.refs.health:SetStatusColor(DefaultHealthColor)
     frame.refs.power:SetStatusColor(DefaultPowerColor)
 
     frame:UpdateUnit()
@@ -156,12 +156,10 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     frame.refs.description.text:SetText(description)
 
     if not info.exists or info.dead then
-      frame.refs.health:SetValue(1)
       frame.refs.power:SetValue(1)
       return
     end
 
-    frame.refs.health:SetValue(info.health / info.maxHealth)
     frame.refs.power:SetValue(info.power / info.maxPower)
   end
 
@@ -185,14 +183,21 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         width = PandaUICore:val(140),
         anchor = PandaUICore:anchor("CENTER"),
         children = {
-          PandaUICore:StatusBar(
+          PandaUICore:Merge(
+            PandaUIUnits:UnitHealthFrame(unit),
             {
-              name = "Health",
               ref = "health",
-              layout = {parts = 9},
-              statusBar = {color = DefaultHealthColor}
+              layout = {parts = 9}
             }
           ),
+          --   PandaUICore:StatusBar(
+          --     {
+          --       name = "Health",
+          --       ref = "health",
+          --       layout = {parts = 9},
+          --       statusBar = {color = DefaultHealthColor}
+          --     }
+          --   ),
           PandaUICore:StatusBar(
             {
               name = "Power",
@@ -254,9 +259,11 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
       }
     },
     events = {},
-    scripts = {OnShow = function(frame)
+    scripts = {
+      OnShow = function(frame)
         frame:SetupUnit()
-      end},
+      end
+    },
     init = function(frame)
       function frame:UpdateUnit()
         Update(frame)
