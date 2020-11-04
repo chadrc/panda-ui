@@ -52,6 +52,7 @@ local function SetCommonDetails(self, d, p)
 end
 
 function FrameMixin:SetBackgroundColor(clr)
+    self.details.backgroundColor = clr;
     self:SetBackdropColor(clr.r, clr.g, clr.b, clr.a);
 end
 

@@ -35,6 +35,7 @@ function UnitPowerFrameMixin:Setup(powerInfo)
 
     local pClr = self.props.powerInfo.color;
     self.refs.status:SetStatusColor(pClr);
+    self.refs.background:SetBackgroundColor(PandaUICore:FadeBy(pClr, .05));
 
     self:Update(self.props.unit, self.props.powerInfo.label);
 end
