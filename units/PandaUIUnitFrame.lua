@@ -50,108 +50,111 @@ PandaUIUnits.InactiveColor = {r = .5, g = .5, b = .5}
 local DefaultBackgroundColor = {r = .5, g = .5, b = .5, a = PandaUIUnits.BackgroundAlpha}
 local DefaultCastColor = {r = .8, g = .8, b = .8, a = .75}
 
+local UnitFrameMixin = {}
+
+function UnitFrameMixin:UpdateCastBars(frame)
+  self.refs.cast:SetMinMaxValues(0, self.maxValue)
+  self.refs.cast:SetValue(self.value)
+end
+
+function UnitFrameMixin:UpdateCast(frame)
+  if not self.casting then
+    return
+  end
+
+  self.value = GetTime() - (self.startTime / 1000)
+  self:UpdateCastBars(self)
+end
+
+function UnitFrameMixin:EndCast(frame, unit)
+  self.casting = false
+  self.maxValue = 1
+  self.value = 0
+  self:UpdateCastBars(frame)
+  self:SetScript("OnUpdate", nil)
+end
+
+function UnitFrameMixin:InitCastbars(frame, unit, infoFunc)
+  local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = infoFunc(unit)
+
+  if name then
+    self:SetScript(
+      "OnUpdate",
+      function(self)
+        self:UpdateCast(self)
+      end
+    )
+    self.casting = true
+    self.startTime = startTime
+    self.maxValue = (endTime - startTime) / 1000
+    self:UpdateCast(self)
+  end
+end
+
+function UnitFrameMixin:InitCast(frame, unit)
+  self:InitCastbars(self, unit, UnitCastingInfo)
+end
+
+function UnitFrameMixin:InitChannel(frame, unit)
+  self:InitCastbars(self, unit, UnitChannelInfo)
+end
+
+function UnitFrameMixin:Setup(frame)
+  local unit = self.props.unit
+  local info = PandaUIUnits:GetUnitInfo(unit)
+
+  self.refs.cast:SetValue(0)
+  self:SetScript("OnUpdate", nil)
+  -- Check for casting and channeling on new unit
+  self:InitCast(self, unit)
+  if not self.casting then
+    self:InitChannel(self, unit)
+  end
+
+  self.refs.health:Update()
+
+  self.refs.power.details.hidden = info.maxPower == 0
+  self.refs.unitStatus:UpdateLayout()
+  self.refs.power:Setup()
+
+  if not info.exists or info.dead then
+    self.casting = false
+    self.channeling = false
+    self:SetBackgroundColor(PandaUICore:FadeBy(PandaUIUnits.InactiveColor, PandaUIUnits.BackgroundAlpha))
+    self:SetAlpha(.5)
+    self.refs.health:MakeInactive()
+    self.refs.power:MakeInactive()
+  else
+    self:SetAlpha(1.0)
+    self:SetBackgroundColor(self.backgroundColor or DefaultBackgroundColor)
+    self.refs.health:MakeActive()
+    self.refs.power:MakeActive()
+  end
+
+  self:Update()
+end
+
+function UnitFrameMixin:Update(frame)
+  local info = PandaUIUnits:GetUnitInfo(self.props.unit)
+
+  -- set description text
+  local classification = ClassificationLabels[info.classification or ""] or ""
+
+  -- allow level to be specified by creator of frame
+  local level = self.level or info.level or -1
+  if level == -1 then
+    level = "??"
+  end
+  if classification ~= "" then
+    level = level .. " "
+  end
+
+  local description = string.format("(%s%s)", level, classification)
+
+  self.refs.description.text:SetText(description)
+end
+
 function PandaUIUnits:UnitFrame(unit, dropDownMenu)
-  local function UpdateCastBars(frame)
-    frame.refs.cast:SetMinMaxValues(0, frame.maxValue)
-    frame.refs.cast:SetValue(frame.value)
-  end
-
-  local function UpdateCast(frame)
-    if not frame.casting then
-      return
-    end
-
-    frame.value = GetTime() - (frame.startTime / 1000)
-    UpdateCastBars(frame)
-  end
-
-  local function EndCast(frame, unit)
-    frame.casting = false
-    frame.maxValue = 1
-    frame.value = 0
-    UpdateCastBars(frame)
-    frame:SetScript("OnUpdate", nil)
-  end
-
-  local function InitCastbars(frame, unit, infoFunc)
-    local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = infoFunc(unit)
-
-    if name then
-      frame:SetScript(
-        "OnUpdate",
-        function(frame)
-          UpdateCast(frame)
-        end
-      )
-      frame.casting = true
-      frame.startTime = startTime
-      frame.maxValue = (endTime - startTime) / 1000
-      UpdateCast(frame)
-    end
-  end
-
-  local InitCast = function(frame, unit)
-    InitCastbars(frame, unit, UnitCastingInfo)
-  end
-
-  local InitChannel = function(frame, unit)
-    InitCastbars(frame, unit, UnitChannelInfo)
-  end
-
-  local function Setup(frame)
-    local info = PandaUIUnits:GetUnitInfo(unit)
-
-    frame.refs.cast:SetValue(0)
-    frame:SetScript("OnUpdate", nil)
-    -- Check for casting and channeling on new unit
-    InitCast(frame, unit)
-    if not frame.casting then
-      InitChannel(frame, unit)
-    end
-
-    frame.refs.health:Update()
-
-    frame.refs.power.details.hidden = info.maxPower == 0
-    frame.refs.unitStatus:UpdateLayout()
-    frame.refs.power:Setup()
-
-    if not info.exists or info.dead then
-      frame.casting = false
-      frame.channeling = false
-      frame:SetBackgroundColor(PandaUICore:FadeBy(PandaUIUnits.InactiveColor, PandaUIUnits.BackgroundAlpha))
-      frame:SetAlpha(.5)
-      frame.refs.health:MakeInactive()
-      frame.refs.power:MakeInactive()
-    else
-      frame:SetAlpha(1.0)
-      frame:SetBackgroundColor(frame.backgroundColor or DefaultBackgroundColor)
-      frame.refs.health:MakeActive()
-      frame.refs.power:MakeActive()
-    end
-
-    frame:UpdateUnit()
-  end
-
-  local function Update(frame)
-    local info = PandaUIUnits:GetUnitInfo(unit)
-
-    -- set description text
-    local classification = ClassificationLabels[info.classification or ""] or ""
-
-    -- allow level to be specified by creator of frame
-    local level = frame.level or info.level or -1
-    if level == -1 then
-      level = "??"
-    end
-    if classification ~= "" then
-      level = level .. " "
-    end
-
-    local description = string.format("(%s%s)", level, classification)
-
-    frame.refs.description.text:SetText(description)
-  end
-
   local LeftPanelWidth = 30
   local RightPanelWidth = 80
   local TopPanelHeight = 15
@@ -163,6 +166,10 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
 
   return {
     name = "UnitFrame",
+    mixin = UnitFrameMixin,
+    props = {
+      unit = unit
+    },
     height = PandaUICore:val(TotalHeight),
     width = PandaUICore:val(TotalWidth),
     childLayout = {
@@ -270,33 +277,24 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     unit = {
       name = unit,
       events = {
-        UNIT_HEALTH = Update,
-        UNIT_POWER_FREQUENT = Update,
-        UNIT_SPELLCAST_START = InitCast,
-        UNIT_SPELLCAST_DELAYED = InitCast,
-        UNIT_SPELLCAST_STOP = EndCast,
-        UNIT_SPELLCAST_FAILED = EndCast,
-        UNIT_SPELLCAST_INTERRUPTED = EndCast,
-        UNIT_SPELLCAST_CHANNEL_START = InitChannel,
-        UNIT_SPELLCAST_CHANNEL_UPDATE = InitChannel,
-        UNIT_SPELLCAST_CHANNEL_STOP = EndCast,
-        UNIT_LEVEL = Update
+        UNIT_HEALTH = "Update",
+        UNIT_POWER_FREQUENT = "Update",
+        UNIT_SPELLCAST_START = "InitCast",
+        UNIT_SPELLCAST_DELAYED = "InitCast",
+        UNIT_SPELLCAST_STOP = "EndCast",
+        UNIT_SPELLCAST_FAILED = "EndCast",
+        UNIT_SPELLCAST_INTERRUPTED = "EndCast",
+        UNIT_SPELLCAST_CHANNEL_START = "InitChannel",
+        UNIT_SPELLCAST_CHANNEL_UPDATE = "InitChannel",
+        UNIT_SPELLCAST_CHANNEL_STOP = "EndCast",
+        UNIT_LEVEL = "Update",
+        UNIT_AURA = "Update"
       }
     },
     events = {},
     scripts = {
-      OnShow = function(frame)
-        frame:SetupUnit()
-      end
-    },
-    init = function(frame)
-      function frame:UpdateUnit()
-        Update(frame)
-      end
-      function frame:SetupUnit()
-        Setup(frame)
-      end
-    end
+      OnShow = "Setup"
+    }
   }
 end
 
@@ -356,7 +354,7 @@ function PandaUIUnits:TargetFrame(vars)
       frame:Hide()
     end
 
-    frame:SetupUnit()
+    frame:Setup()
   end
 
   details.events.PLAYER_ENTERING_WORLD = SetupTarget
@@ -411,11 +409,11 @@ function PandaUIUnits:PlayerFrame(vars)
 
   details.events.PLAYER_LEVEL_UP = function(frame, level)
     frame.level = level
-    frame:UpdateUnit()
+    frame:Update()
   end
   details.events.PLAYER_LEVEL_CHANGED = function(frame, oldLevel, newLevel)
     frame.level = newLevel
-    frame:UpdateUnit()
+    frame:Update()
   end
 
   return details

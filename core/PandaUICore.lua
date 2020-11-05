@@ -246,7 +246,11 @@ function PandaUICore:CreateFrame(name, details, children)
 
   if d.scripts then
     for h, s in pairs(d.scripts) do
-      frame:SetScript(h, s)
+      local f = s
+      if type(s) == "string" then
+        f = frame[s]
+      end
+      frame:SetScript(h, f)
     end
   end
 
@@ -266,7 +270,11 @@ function PandaUICore:CreateFrame(name, details, children)
   if d.unit then
     for name, h in pairs(d.unit.events or {}) do
       frame:RegisterUnitEvent(name, d.unit.name)
-      allEvents[name] = h
+      local f = h
+      if type(f) == "string" then
+        f = frame[h]
+      end
+      allEvents[name] = f
     end
   end
 
