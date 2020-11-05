@@ -110,6 +110,9 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     end
 
     frame.refs.health:Update()
+
+    frame.refs.power.details.hidden = info.maxPower == 0
+    frame.refs.unitStatus:UpdateLayout()
     frame.refs.power:Setup()
 
     if not info.exists or info.dead then
@@ -156,72 +159,108 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
 
   return {
     name = "UnitFrame",
-    height = PandaUICore:val(50),
-    width = PandaUICore:val(150),
-    backgroundColor = DefaultBackgroundColor,
+    height = PandaUICore:val(50 + 15 * 2),
+    width = PandaUICore:val(30 + 150),
+    childLayout = {
+      type = "align",
+      direction = "horizontal"
+    },
     children = {
-      PandaUICore:StatusBar(
-        {
-          name = "CastBar",
-          ref = "cast",
-          statusBar = {color = DefaultCastColor}
-        }
-      ),
       {
-        name = "Status",
-        childLayout = {direction = "vertical"},
-        height = PandaUICore:val(40),
-        width = PandaUICore:val(140),
-        anchor = PandaUICore:anchor("CENTER"),
-        children = {
-          PandaUICore:Merge(
-            PandaUIUnits:UnitHealthFrame(unit),
-            {
-              ref = "health",
-              layout = {parts = 9}
-            }
-          ),
-          PandaUICore:Merge(
-            PandaUIUnits:UnitPowerFrame(unit),
-            {
-              ref = "power"
-            }
-          )
-        },
-        init = function(frame)
-          local button = CreateFrame("Button", frame:GetName() .. "UnitButton", frame, "SecureUnitButtonTemplate")
-          button:SetSize(frame:GetWidth(), frame:GetHeight())
-          button:RegisterForClicks("AnyUp")
-          button:SetPoint("CENTER")
-          SecureUnitButton_OnLoad(button, unit, dropDownMenu)
-          -- button:SetAttribute("*type1", "target");
-          -- button:SetAttribute("shift-type2", "target");
-          -- button:SetAttribute("unit", unit);
-          button:SetScript(
-            "OnEnter",
-            function(frame)
-              GameTooltip:SetOwner(frame, "ANCHOR_BOTTOM")
-              GameTooltip:SetUnit(unit, true)
-              GameTooltip:Show()
-            end
-          )
-          button:SetScript(
-            "OnLeave",
-            function(frame)
-              GameTooltip:Hide()
-            end
-          )
-        end
+        name = "Left",
+        width = PandaUICore:val(30),
+        backgroundColor = {r = 1}
       },
       {
-        name = "Description",
-        ref = "description",
-        text = {
-          font = "PandaUI_GameFontNormalMed",
-          -- text = "Test Value",
-          anchor = PandaUICore:anchor("CENTER")
+        width = PandaUICore:val(150),
+        childLayout = {
+          type = "align",
+          direction = "vertical"
         },
-        frameLevel = 100
+        children = {
+          {
+            name = "Top",
+            height = PandaUICore:val(15),
+            backgroundColor = {b = 1}
+          },
+          {
+            name = "Middle",
+            backgroundColor = DefaultBackgroundColor,
+            height = PandaUICore:val(50),
+            children = {
+              PandaUICore:StatusBar(
+                {
+                  name = "CastBar",
+                  ref = "cast",
+                  statusBar = {color = DefaultCastColor}
+                }
+              ),
+              {
+                name = "Status",
+                ref = "unitStatus",
+                childLayout = {direction = "vertical"},
+                height = PandaUICore:val(40),
+                width = PandaUICore:val(140),
+                anchor = PandaUICore:anchor("CENTER"),
+                children = {
+                  PandaUICore:Merge(
+                    PandaUIUnits:UnitHealthFrame(unit),
+                    {
+                      ref = "health",
+                      layout = {parts = 9}
+                    }
+                  ),
+                  PandaUICore:Merge(
+                    PandaUIUnits:UnitPowerFrame(unit),
+                    {
+                      ref = "power"
+                    }
+                  )
+                },
+                init = function(frame)
+                  local button =
+                    CreateFrame("Button", frame:GetName() .. "UnitButton", frame, "SecureUnitButtonTemplate")
+                  button:SetSize(frame:GetWidth(), frame:GetHeight())
+                  button:RegisterForClicks("AnyUp")
+                  button:SetPoint("CENTER")
+                  SecureUnitButton_OnLoad(button, unit, dropDownMenu)
+                  -- button:SetAttribute("*type1", "target");
+                  -- button:SetAttribute("shift-type2", "target");
+                  -- button:SetAttribute("unit", unit);
+                  button:SetScript(
+                    "OnEnter",
+                    function(frame)
+                      GameTooltip:SetOwner(frame, "ANCHOR_BOTTOM")
+                      GameTooltip:SetUnit(unit, true)
+                      GameTooltip:Show()
+                    end
+                  )
+                  button:SetScript(
+                    "OnLeave",
+                    function(frame)
+                      GameTooltip:Hide()
+                    end
+                  )
+                end
+              },
+              {
+                name = "Description",
+                ref = "description",
+                text = {
+                  font = "PandaUI_GameFontNormalMed",
+                  -- text = "Test Value",
+                  anchor = PandaUICore:anchor("CENTER")
+                },
+                frameLevel = 100
+              }
+            }
+          },
+          {
+            name = "Bottom",
+            height = PandaUICore:val(15),
+            backgroundColor = {b = 1}
+          }
+        }
       }
     },
     unit = {
