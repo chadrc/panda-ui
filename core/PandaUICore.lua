@@ -61,7 +61,10 @@ function PandaUICore:Print(t)
 
   local strs = {}
   for k, v in pairs(t) do
-    table.insert(strs, string.format("%s = %s", tostring(k), tostring(v)))
+    table.insert(
+      strs,
+      string.format("%s = %s", tostring(k), tostring(v))
+    )
   end
   print(table.concat(strs, ", "))
 end
@@ -161,8 +164,17 @@ function PandaUICore:ToggleBlizzardUI()
 end
 
 function PandaUICore:Initialize()
-  self.rootFrame = CreateFrame("Frame", "PandaUIRootFrame", UIParent, BackdropTemplateMixin and "BackdropTemplate")
-  self.rootFrame:SetSize(self.rootFrame:GetParent():GetWidth(), self.rootFrame:GetParent():GetHeight())
+  self.rootFrame =
+    CreateFrame(
+    "Frame",
+    "PandaUIRootFrame",
+    UIParent,
+    BackdropTemplateMixin and "BackdropTemplate"
+  )
+  self.rootFrame:SetSize(
+    self.rootFrame:GetParent():GetWidth(),
+    self.rootFrame:GetParent():GetHeight()
+  )
   self.rootFrame:SetBackdrop(
     {
       bgFile = "Interface\\Buttons\\WHITE8X8",
@@ -184,7 +196,9 @@ function PandaUICore:CreateFrame(name, details, children)
   if n then
     n = d.parent:GetName() .. n
   else
-    n = d.parent:GetName() .. "_ChildFrame_" .. tostring(d.parent:GetNumChildren() + 1)
+    n =
+      d.parent:GetName() ..
+      "_ChildFrame_" .. tostring(d.parent:GetNumChildren() + 1)
   end
 
   local templates = {}
@@ -195,7 +209,8 @@ function PandaUICore:CreateFrame(name, details, children)
     table.insert(templates, tmp)
   end
 
-  local frame = CreateFrame(t, n, d.parent, table.concat(templates, ","))
+  local frame =
+    CreateFrame(t, n, d.parent, table.concat(templates, ","))
   PandaUICore:ApplyFrameMixin(frame)
   PandaUICore:ApplyMixin(frame, d.mixin)
 
@@ -224,7 +239,8 @@ function PandaUICore:CreateFrame(name, details, children)
     for i, child in ipairs(children) do
       child.parent = frame
 
-      local childFrame = PandaUICore:CreateFrame(child.name, child, child.children)
+      local childFrame =
+        PandaUICore:CreateFrame(child.name, child, child.children)
       table.insert(childFrames, childFrame)
 
       for k, v in pairs(childFrame.refs) do
@@ -318,7 +334,9 @@ end
 function PandaUICore:pct(p)
   return {type = "percentage", value = p}
 end
-
+function PandaUICore:calc(f)
+  return {type = "calc", func = f}
+end
 function PandaUICore:StatusBar(details)
   local orgInit = details.init
   local statusDetails = details.statusBar or {}
@@ -331,7 +349,8 @@ function PandaUICore:StatusBar(details)
   d.name = d.name or "StatusBar"
   d.type = "StatusBar"
   d.init = function(frame)
-    local texture = frame:CreateTexture(frame:GetName() .. "Texture", "BACKGROUND")
+    local texture =
+      frame:CreateTexture(frame:GetName() .. "Texture", "BACKGROUND")
     texture:SetTexture("Interface\\Buttons\\WHITE8X8")
     frame.statusBarTexture = texture
     frame:SetStatusBarTexture(texture)

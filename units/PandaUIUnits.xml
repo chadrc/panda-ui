@@ -4,5 +4,6 @@
     <Script file="units/PandaUIUnits.lua"/>
     <Script file="units/PandaUIUnitHealth.lua"/>
     <Script file="units/PandaUIUnitPower.lua"/>
+    <Script file="units/PandaUIUnitAuras.lua"/>
     <Script file="units/PandaUIUnitFrame.lua"/>
 </Ui>

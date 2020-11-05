@@ -4,6 +4,8 @@ local function ExtractValue(info, parentValue)
   if info then
     if info.type == "percentage" then
       return parentValue * info.value
+    elseif info.type == "calc" then
+      return info.func(parentValue)
     else
       return info.value
     end
@@ -74,7 +76,9 @@ function FrameMixin:UpdateStyles()
   local d = self.details
   local p = d.parent
 
-  self:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8X8", tile = true})
+  self:SetBackdrop(
+    {bgFile = "Interface\\Buttons\\WHITE8X8", tile = true}
+  )
   self:SetBackdropColor(0, 0, 0, 0)
 
   if d.backgroundColor then
@@ -97,7 +101,8 @@ function FrameMixin:UpdateStyles()
     local layer = d.text.layer or "OVERLAY"
     local font = d.text.font or "GameFontNormal"
     if not self.text then
-      self.text = self:CreateFontString(self:GetName() .. "Text", layer, font)
+      self.text =
+        self:CreateFontString(self:GetName() .. "Text", layer, font)
     end
 
     d.text.width = d.text.width or PandaUICore:auto()
@@ -153,7 +158,8 @@ local function LayoutChildGrid(self)
     local offsetX = col * (cellWidth + cellPadding) * xFactor
     local offsetY = row * (cellHeight + cellPadding) * yFactor
 
-    child.details.anchor = PandaUICore:anchor(start, start, offsetX, offsetY)
+    child.details.anchor =
+      PandaUICore:anchor(start, start, offsetX, offsetY)
 
     child:UpdateStyles()
     child:UpdateLayout()
@@ -170,7 +176,8 @@ local function LayoutChildAlign(frame)
     else
       yOfs = offset
     end
-    local anchor = PandaUICore:anchor("BOTTOMLEFT", "BOTTOMLEFT", xOfs, yOfs)
+    local anchor =
+      PandaUICore:anchor("BOTTOMLEFT", "BOTTOMLEFT", xOfs, yOfs)
     childFrame.details.anchor = anchor
     childFrame:UpdateStyles()
     childFrame:UpdateLayout()
@@ -220,9 +227,16 @@ function FrameMixin:UpdateLayout()
         -- calculate width based on parts
         child.details.height = PandaUICore:val(self:GetHeight())
 
-        local childWidth = self:GetWidth() * (child.details.layout.parts / totalParts)
+        local childWidth =
+          self:GetWidth() * (child.details.layout.parts / totalParts)
         child.details.width = PandaUICore:val(childWidth)
-        child.details.anchor = PandaUICore:anchor("BOTTOMLEFT", nil, currentChildOffsetX, 0)
+        child.details.anchor =
+          PandaUICore:anchor(
+          "BOTTOMLEFT",
+          nil,
+          currentChildOffsetX,
+          0
+        )
 
         if not child.details.hidden then
           currentChildOffsetX = currentChildOffsetX + childWidth
@@ -232,9 +246,11 @@ function FrameMixin:UpdateLayout()
         -- calculate height based on parts
         child.details.width = PandaUICore:val(self:GetWidth())
 
-        local childHeight = self:GetHeight() * (child.details.layout.parts / totalParts)
+        local childHeight =
+          self:GetHeight() * (child.details.layout.parts / totalParts)
         child.details.height = PandaUICore:val(childHeight)
-        child.details.anchor = PandaUICore:anchor("TOPLEFT", nil, 0, -currentChildOffsetY)
+        child.details.anchor =
+          PandaUICore:anchor("TOPLEFT", nil, 0, -currentChildOffsetY)
 
         if not child.details.hidden then
           currentChildOffsetY = currentChildOffsetY + childHeight

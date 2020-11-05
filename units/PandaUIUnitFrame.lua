@@ -203,120 +203,7 @@ local ControlButtonSpacing = 5
 local ControlPanelHeight =
   ControlButtonSize * 2 + ControlButtonSpacing
 local ControlPanelWidth = ControlButtonSize
-local AuraSize = 15
-local AuraPadding = 2.5
 local MaxAuraCount = 5
-
-local BuffGridMixin = {}
-
-function BuffGridMixin:Update()
-  local frame = self
-  local maxCount = self.props.maxCount
-  local index = 1
-  AuraUtil.ForEachAura(
-    self.props.unit,
-    self.props.filter,
-    maxCount,
-    function(...)
-      local name,
-        buffTexture,
-        count,
-        debuffType,
-        duration,
-        expirationTime,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        _,
-        timeMod = ...
-
-      local buffFrame = frame.childFrames[index]
-      --   buffFrame.expirationTime = aura.expirationTime
-      buffFrame.details.hidden = false
-      buffFrame.auraIndex = index
-
-      buffFrame.texture:SetTexture(buffTexture)
-      buffFrame.details.texture.file = buffTexture
-
-      --   local timeText = buffFrame.refs.timeText.details.text
-      --   local stackText = buffFrame.refs.stackText.details.text
-
-      --   if aura.duration > 0 and aura.expirationTime then
-      --     timeText.hidden = false
-      --     buffFrame:SetScript("OnUpdate", UpdateAura)
-      --     UpdateAura(buffFrame)
-      --   else
-      --     timeText.hidden = true
-      --   end
-
-      --   stackText.hidden = not aura.count or aura.count == 0
-      --   stackText.text = aura.count or ""
-
-      --   buffFrame.refs.timeText:UpdateStyles()
-      --   buffFrame.refs.stackText:UpdateStyles()
-      buffFrame:UpdateStyles()
-
-      index = index + 1
-      return index > maxCount
-    end
-  )
-
-  -- hide remaining frames
-  for i = index, maxCount do
-    frame.childFrames[i].details.hidden = true
-    frame.childFrames[i]:UpdateStyles()
-    frame.childFrames[i]:SetScript("OnUpdate", nil)
-  end
-end
-
-local function MakeAuraGrid(unit, name, anchor, filter, maxCount)
-  local children = {}
-  for i = 1, maxCount do
-    table.insert(
-      children,
-      {
-        name = "Buff" .. i,
-        -- backgroundColor = {g = 1},
-        hidden = true,
-        texture = {}
-      }
-    )
-  end
-
-  return {
-    name = name,
-    ref = string.lower(name),
-    mixin = BuffGridMixin,
-    props = {
-      unit = unit,
-      filter = filter,
-      maxCount = maxCount
-    },
-    height = PandaUICore:val(10),
-    anchor = PandaUICore:anchor(anchor),
-    width = PandaUICore:val(RightPanelWidth - 10),
-    childLayout = {
-      type = "grid",
-      rows = 1,
-      cellWidth = AuraSize,
-      cellHeight = AuraSize,
-      cellPadding = 2.5
-    },
-    children = children,
-    unit = {
-      name = unit,
-      events = {
-        UNIT_AURA = function(frame, unit)
-          frame:Update()
-        end
-      }
-    }
-  }
-end
 
 function PandaUIUnits:UnitFrame(
   unit,
@@ -401,7 +288,7 @@ function PandaUIUnits:UnitFrame(
             height = PandaUICore:val(TopPanelHeight),
             -- backgroundColor = {b = 1},
             children = {
-              MakeAuraGrid(
+              PandaUIUnits:MakeAuraGrid(
                 unit,
                 "Debuffs",
                 "BOTTOMLEFT",
@@ -476,7 +363,7 @@ function PandaUIUnits:UnitFrame(
             height = PandaUICore:val(BottomPanelHeight),
             -- backgroundColor = {b = 1}
             children = {
-              MakeAuraGrid(
+              PandaUIUnits:MakeAuraGrid(
                 unit,
                 "Buffs",
                 "TOPLEFT",
