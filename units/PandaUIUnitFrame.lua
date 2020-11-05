@@ -47,7 +47,12 @@ local ClassificationLabels = {
 PandaUIUnits.BackgroundAlpha = .5
 PandaUIUnits.InactiveColor = {r = .5, g = .5, b = .5}
 
-local DefaultBackgroundColor = {r = .5, g = .5, b = .5, a = PandaUIUnits.BackgroundAlpha}
+local DefaultBackgroundColor = {
+  r = .5,
+  g = .5,
+  b = .5,
+  a = PandaUIUnits.BackgroundAlpha
+}
 local DefaultCastColor = {r = .8, g = .8, b = .8, a = .75}
 
 local UnitFrameMixin = {}
@@ -75,7 +80,14 @@ function UnitFrameMixin:EndCast(frame, unit)
 end
 
 function UnitFrameMixin:InitCastbars(frame, unit, infoFunc)
-  local name, text, texture, startTime, endTime, isTradeSkill, castID, notInterruptible = infoFunc(unit)
+  local name,
+    text,
+    texture,
+    startTime,
+    endTime,
+    isTradeSkill,
+    castID,
+    notInterruptible = infoFunc(unit)
 
   if name then
     self:SetScript(
@@ -120,13 +132,20 @@ function UnitFrameMixin:Setup(frame)
   if not info.exists or info.dead then
     self.casting = false
     self.channeling = false
-    self:SetBackgroundColor(PandaUICore:FadeBy(PandaUIUnits.InactiveColor, PandaUIUnits.BackgroundAlpha))
+    self.refs.unitStatus:SetBackgroundColor(
+      PandaUICore:FadeBy(
+        PandaUIUnits.InactiveColor,
+        PandaUIUnits.BackgroundAlpha
+      )
+    )
     self:SetAlpha(.5)
     self.refs.health:MakeInactive()
     self.refs.power:MakeInactive()
   else
     self:SetAlpha(1.0)
-    self:SetBackgroundColor(self.backgroundColor or DefaultBackgroundColor)
+    self.refs.unitStatus:SetBackgroundColor(
+      self.backgroundColor or DefaultBackgroundColor
+    )
     self.refs.health:MakeActive()
     self.refs.power:MakeActive()
   end
@@ -138,7 +157,8 @@ function UnitFrameMixin:Update(frame)
   local info = PandaUIUnits:GetUnitInfo(self.props.unit)
 
   -- set description text
-  local classification = ClassificationLabels[info.classification or ""] or ""
+  local classification =
+    ClassificationLabels[info.classification or ""] or ""
 
   -- allow level to be specified by creator of frame
   local level = self.level or info.level or -1
@@ -154,16 +174,51 @@ function UnitFrameMixin:Update(frame)
   self.refs.description.text:SetText(description)
 end
 
-function PandaUIUnits:UnitFrame(unit, dropDownMenu)
-  local LeftPanelWidth = 30
-  local RightPanelWidth = 80
-  local TopPanelHeight = 15
-  local BottomPanelHeight = TopPanelHeight
-  local MiddlePanelHeight = 40
-  local StatusPadding = 10
-  local TotalWidth = LeftPanelWidth + RightPanelWidth
-  local TotalHeight = BottomPanelHeight + TopPanelHeight + MiddlePanelHeight
+-- Move to settings eventually
+local LeftPanelWidth = 25
+local RightPanelWidth = 80
+local TopPanelHeight = 15
+local BottomPanelHeight = TopPanelHeight
+local MiddlePanelHeight = 40
+local StatusPadding = 10
+local TotalWidth = LeftPanelWidth + RightPanelWidth
+local TotalHeight =
+  BottomPanelHeight + TopPanelHeight + MiddlePanelHeight
+local ControlButtonSize = 15
+local ControlButtonSpacing = 5
+local ControlPanelHeight =
+  ControlButtonSize * 2 + ControlButtonSpacing
+local ControlPanelWidth = ControlButtonSize
 
+local function MakeAuraGrid(unit, name, anchor)
+  local children = {}
+  for i = 1, 5 do
+    table.insert(
+      children,
+      {
+        name = "Buff" .. i,
+        backgroundColor = {g = 1}
+      }
+    )
+  end
+
+  return {
+    name = name,
+    height = PandaUICore:val(10),
+    anchor = PandaUICore:anchor(anchor),
+    width = PandaUICore:val(RightPanelWidth - 10),
+    childLayout = {
+      type = "grid",
+      rows = 1,
+      cellWidth = 10,
+      cellHeight = 10,
+      cellPadding = 5
+    },
+    children = children
+  }
+end
+
+function PandaUIUnits:UnitFrame(unit, dropDownMenu)
   return {
     name = "UnitFrame",
     mixin = UnitFrameMixin,
@@ -180,7 +235,33 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
       {
         name = "Left",
         width = PandaUICore:val(LeftPanelWidth),
-        backgroundColor = {r = 1}
+        -- backgroundColor = {r = 1},
+        children = {
+          {
+            childLayout = {type = "align", direction = "vertical"},
+            width = PandaUICore:val(ControlPanelWidth),
+            height = PandaUICore:val(ControlPanelHeight),
+            anchor = PandaUICore:anchor("CENTER"),
+            children = {
+              {
+                name = "Target",
+                height = PandaUICore:val(ControlButtonSize),
+                width = PandaUICore:val(ControlButtonSize),
+                backgroundColor = {g = 1}
+              },
+              {
+                height = PandaUICore:val(ControlButtonSpacing)
+              },
+              {
+                name = "CastIcon",
+                ref = "castIcon",
+                height = PandaUICore:val(ControlButtonSize),
+                width = PandaUICore:val(ControlButtonSize),
+                backgroundColor = {g = 1}
+              }
+            }
+          }
+        }
       },
       {
         width = PandaUICore:val(RightPanelWidth),
@@ -190,9 +271,10 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         },
         children = {
           {
-            name = "Top",
+            name = "Bottom",
             height = PandaUICore:val(TopPanelHeight),
-            backgroundColor = {b = 1}
+            -- backgroundColor = {b = 1},
+            children = {MakeAuraGrid(unit, "Debuffs", "BOTTOMLEFT")}
           },
           {
             name = "Middle",
@@ -210,8 +292,12 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                 name = "Status",
                 ref = "unitStatus",
                 childLayout = {direction = "vertical"},
-                height = PandaUICore:val(MiddlePanelHeight - StatusPadding),
-                width = PandaUICore:val(RightPanelWidth - StatusPadding),
+                height = PandaUICore:val(
+                  MiddlePanelHeight - StatusPadding
+                ),
+                width = PandaUICore:val(
+                  RightPanelWidth - StatusPadding
+                ),
                 anchor = PandaUICore:anchor("CENTER"),
                 children = {
                   PandaUICore:Merge(
@@ -230,7 +316,12 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                 },
                 init = function(frame)
                   local button =
-                    CreateFrame("Button", frame:GetName() .. "UnitButton", frame, "SecureUnitButtonTemplate")
+                    CreateFrame(
+                    "Button",
+                    frame:GetName() .. "UnitButton",
+                    frame,
+                    "SecureUnitButtonTemplate"
+                  )
                   button:SetSize(frame:GetWidth(), frame:GetHeight())
                   button:RegisterForClicks("AnyUp")
                   button:SetPoint("CENTER")
@@ -267,9 +358,10 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             }
           },
           {
-            name = "Bottom",
+            name = "Top",
             height = PandaUICore:val(BottomPanelHeight),
-            backgroundColor = {b = 1}
+            -- backgroundColor = {b = 1}
+            children = {MakeAuraGrid(unit, "Buffs", "TOPLEFT")}
           }
         }
       }
@@ -300,14 +392,21 @@ end
 
 local function SetMovable(details, default, vars, saveVar)
   local point = vars[saveVar] or default
-  details.anchor = PandaUICore:anchor(point.point, point.relativePoint, point.xOfs, point.yOfs)
+  details.anchor =
+    PandaUICore:anchor(
+    point.point,
+    point.relativePoint,
+    point.xOfs,
+    point.yOfs
+  )
   details.movable = true
   details.scripts.OnMouseDown = function(frame)
     frame:StartMoving()
   end
   details.scripts.OnMouseUp = function(frame)
     frame:StopMovingOrSizing()
-    local point, relativeTo, relativePoint, xOfs, yOfs = frame:GetPoint(1)
+    local point, relativeTo, relativePoint, xOfs, yOfs =
+      frame:GetPoint(1)
     vars[saveVar] = {
       point = point,
       relativeTo = relativeTo,
@@ -316,7 +415,8 @@ local function SetMovable(details, default, vars, saveVar)
       yOfs = yOfs
     }
 
-    frame.details.anchor = PandaUICore:anchor(point, relativePoint, xOfs, yOfs)
+    frame.details.anchor =
+      PandaUICore:anchor(point, relativePoint, xOfs, yOfs)
   end
 end
 
@@ -411,7 +511,10 @@ function PandaUIUnits:PlayerFrame(vars)
     frame.level = level
     frame:Update()
   end
-  details.events.PLAYER_LEVEL_CHANGED = function(frame, oldLevel, newLevel)
+  details.events.PLAYER_LEVEL_CHANGED = function(
+    frame,
+    oldLevel,
+    newLevel)
     frame.level = newLevel
     frame:Update()
   end
