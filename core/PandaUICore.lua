@@ -264,7 +264,11 @@ function PandaUICore:CreateFrame(name, details, children)
   local allEvents = {}
   for name, h in pairs(d.events or {}) do
     frame:RegisterEvent(name)
-    allEvents[name] = h
+    local f = h
+    if type(f) == "string" then
+      f = frame[h]
+    end
+    allEvents[name] = f
   end
 
   if d.unit then
