@@ -318,7 +318,11 @@ local function MakeAuraGrid(unit, name, anchor, filter, maxCount)
   }
 end
 
-function PandaUIUnits:UnitFrame(unit, dropDownMenu)
+function PandaUIUnits:UnitFrame(
+  unit,
+  dropDownMenu,
+  buffFilter,
+  debuffFilter)
   return {
     name = "UnitFrame",
     mixin = UnitFrameMixin,
@@ -401,7 +405,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                 unit,
                 "Debuffs",
                 "BOTTOMLEFT",
-                "HARMFUL RAID",
+                debuffFilter,
                 MaxAuraCount
               )
             }
@@ -476,7 +480,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                 unit,
                 "Buffs",
                 "TOPLEFT",
-                "HELPFUL RAID",
+                buffFilter,
                 MaxAuraCount
               )
             }
@@ -546,7 +550,8 @@ function PandaUIUnits:TargetFrame(vars)
   local showmenu = function()
     ToggleDropDownMenu(1, nil, dropdown, "cursor", 0, 0)
   end
-  local details = self:UnitFrame("target", showmenu)
+  local details =
+    self:UnitFrame("target", showmenu, "HELPFUL", "HARMFUL PLAYER")
   details.hidden = true
 
   local function SetupTarget(frame)
@@ -610,7 +615,8 @@ function PandaUIUnits:PlayerFrame(vars)
   local menuFunc = function()
     ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor", 0, 0)
   end
-  local details = self:UnitFrame("player", menuFunc)
+  local details =
+    self:UnitFrame("player", menuFunc, "HELPFUL RAID", "HARMFUL RAID")
   details.anchor = point
   SetMovable(
     details,
