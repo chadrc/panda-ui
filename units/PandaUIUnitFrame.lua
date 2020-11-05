@@ -187,10 +187,10 @@ end
 
 -- Move to settings eventually
 local LeftPanelWidth = 25
-local RightPanelWidth = 80
+local RightPanelWidth = 85
 local TopPanelHeight = 15
 local BottomPanelHeight = TopPanelHeight
-local MiddlePanelHeight = 40
+local MiddlePanelHeight = 50
 local StatusPadding = 10
 local TotalWidth = LeftPanelWidth + RightPanelWidth
 local TotalHeight =
@@ -203,7 +203,7 @@ local ControlPanelWidth = ControlButtonSize
 
 local function MakeAuraGrid(unit, name, anchor)
   local children = {}
-  for i = 1, 5 do
+  for i = 1, 6 do
     table.insert(
       children,
       {
@@ -349,7 +349,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                 },
                 scripts = {
                   OnEnter = function(frame)
-                    GameTooltip:SetOwner(frame, "ANCHOR_BOTTOM")
+                    GameTooltip:SetOwner(frame, "ANCHOR_BOTTOMRIGHT")
                     GameTooltip:SetUnit(unit, true)
                     GameTooltip:Show()
                   end,
