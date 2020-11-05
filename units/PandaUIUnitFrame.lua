@@ -75,6 +75,7 @@ function UnitFrameMixin:EndCast(frame, unit)
   self.casting = false
   self.maxValue = 1
   self.value = 0
+  self.refs.castIcon:Hide()
   self:UpdateCastBars(frame)
   self:SetScript("OnUpdate", nil)
 end
@@ -87,7 +88,10 @@ function UnitFrameMixin:InitCastbars(frame, unit, infoFunc)
     endTime,
     isTradeSkill,
     castID,
-    notInterruptible = infoFunc(unit)
+    notInterruptible = infoFunc(self.props.unit)
+
+  self.refs.castIcon:Show()
+  self.refs.castIcon.texture:SetTexture(texture)
 
   if name then
     self:SetScript(
@@ -244,17 +248,19 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             anchor = PandaUICore:anchor("CENTER"),
             children = {
               {
-                name = "Target",
+                name = "CastIcon",
+                ref = "castIcon",
                 height = PandaUICore:val(ControlButtonSize),
                 width = PandaUICore:val(ControlButtonSize),
-                backgroundColor = {g = 1}
+                -- backgroundColor = {g = 1},
+                texture = {},
+                hidden = true
               },
               {
                 height = PandaUICore:val(ControlButtonSpacing)
               },
               {
-                name = "CastIcon",
-                ref = "castIcon",
+                name = "Target",
                 height = PandaUICore:val(ControlButtonSize),
                 width = PandaUICore:val(ControlButtonSize),
                 backgroundColor = {g = 1}
