@@ -1,15 +1,17 @@
 function PandaUIUnits:GetUnitInfo(unit)
   if not UnitExists(unit) then
-    return {exists = false}
+    return {exists = false, classFile = ""}
   end
 
   local powerType, powerToken = UnitPowerType(unit)
   local name, realm = UnitName(unit)
+  local className, classFile = UnitClass(unit)
   local info = {
     exists = true,
     name = name,
     realm = realm,
-    class = UnitClass(unit),
+    class = className,
+    classFile = classFile,
     maxHealth = UnitHealthMax(unit),
     health = UnitHealth(unit),
     connected = UnitIsConnected(unit),
@@ -132,6 +134,11 @@ function UnitFrameMixin:Setup(frame)
   self.refs.power.details.hidden = info.maxPower == 0
   self.refs.unitStatus:UpdateLayout()
   self.refs.power:Setup()
+
+  -- still deciding between this or crosshairs
+  --   self.refs.actions.texture:SetTexture(
+  --     string.format("Interface\\ICONS\\ClassIcon_%s", info.classFile)
+  --   )
 
   if not info.exists or info.dead then
     self.casting = false
@@ -261,9 +268,29 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
               },
               {
                 name = "Target",
+                ref = "actions",
                 height = PandaUICore:val(ControlButtonSize),
                 width = PandaUICore:val(ControlButtonSize),
-                backgroundColor = {g = 1}
+                -- backgroundColor = {r = 0, g = 0, b = 0},
+                texture = {
+                  file = "Interface\\CURSOR\\Crosshairs"
+                },
+                init = function(frame)
+                  local button =
+                    CreateFrame(
+                    "Button",
+                    frame:GetName() .. "UnitButton",
+                    frame,
+                    "SecureUnitButtonTemplate"
+                  )
+                  button:SetSize(frame:GetWidth(), frame:GetHeight())
+                  button:RegisterForClicks("AnyUp")
+                  button:SetPoint("CENTER")
+                  SecureUnitButton_OnLoad(button, unit, dropDownMenu)
+                  -- button:SetAttribute("*type1", "target");
+                  -- button:SetAttribute("shift-type2", "target");
+                  -- button:SetAttribute("unit", unit);
+                end
               }
             }
           }
@@ -320,36 +347,16 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                     }
                   )
                 },
-                init = function(frame)
-                  local button =
-                    CreateFrame(
-                    "Button",
-                    frame:GetName() .. "UnitButton",
-                    frame,
-                    "SecureUnitButtonTemplate"
-                  )
-                  button:SetSize(frame:GetWidth(), frame:GetHeight())
-                  button:RegisterForClicks("AnyUp")
-                  button:SetPoint("CENTER")
-                  SecureUnitButton_OnLoad(button, unit, dropDownMenu)
-                  -- button:SetAttribute("*type1", "target");
-                  -- button:SetAttribute("shift-type2", "target");
-                  -- button:SetAttribute("unit", unit);
-                  button:SetScript(
-                    "OnEnter",
-                    function(frame)
-                      GameTooltip:SetOwner(frame, "ANCHOR_BOTTOM")
-                      GameTooltip:SetUnit(unit, true)
-                      GameTooltip:Show()
-                    end
-                  )
-                  button:SetScript(
-                    "OnLeave",
-                    function(frame)
-                      GameTooltip:Hide()
-                    end
-                  )
-                end
+                scripts = {
+                  OnEnter = function(frame)
+                    GameTooltip:SetOwner(frame, "ANCHOR_BOTTOM")
+                    GameTooltip:SetUnit(unit, true)
+                    GameTooltip:Show()
+                  end,
+                  OnLeave = function(frame)
+                    GameTooltip:Hide()
+                  end
+                }
               },
               {
                 name = "Description",
