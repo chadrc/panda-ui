@@ -26,7 +26,14 @@ function UnitHealthFrameMixin:Update()
     local p = allIncomingHeal / max
     self.refs.healPrediction.details.width = PandaUICore:pct(p)
     local offset = (cur / max) * self:GetWidth()
-    self.refs.healPrediction.details.anchor = PandaUICore:anchor("RIGHT", "RIGHT", -offset, 0)
+    self.refs.healPrediction.details.anchor =
+      PandaUICore:anchor(
+      self.props.healPredictionAnchor,
+      self.props.healPredictionAnchor,
+      offset * self.props.offsetFactor,
+      0
+    )
+
     self.refs.healPrediction.details.hidden = false
   else
     self.refs.healPrediction.details.hidden = true
@@ -55,7 +62,8 @@ function UnitHealthFrameMixin:CheckForStagger(frame)
           overlayDetails.hidden = false
 
           local offset = (cur / max) * self:GetWidth()
-          overlayDetails.anchor = PandaUICore:anchor("LEFT", "RIGHT", -offset, 0)
+          overlayDetails.anchor =
+            PandaUICore:anchor("LEFT", "RIGHT", -offset, 0)
         else
           overlayDetails.hidden = true
         end
@@ -82,9 +90,20 @@ function PandaUIUnits:UnitHealthFrame(unit, reverseFill)
   local function Update(frame)
     frame:Update()
   end
+
+  local predictionAnchor = "LEFT"
+  local offsetFactor = 1
+  if reverseFill then
+    predictionAnchor = "RIGHT"
+    offsetFactor = -1
+  end
   return {
     name = unit .. "Health",
-    props = {unit = unit},
+    props = {
+      unit = unit,
+      offsetFactor = offsetFactor,
+      healPredictionAnchor = predictionAnchor
+    },
     mixin = UnitHealthFrameMixin,
     backgroundColor = {r = 0, g = .8, b = 0, a = .05},
     children = {
@@ -101,7 +120,7 @@ function PandaUIUnits:UnitHealthFrame(unit, reverseFill)
               ref = "absorbPrediction",
               hidden = true,
               height = PandaUICore:pct(1),
-              anchor = PandaUICore:anchor("RIGHT"),
+              anchor = PandaUICore:anchor(predictionAnchor),
               backgroundColor = {r = 1.0, g = 1.0, b = 1.0, a = .5}
             },
             {
