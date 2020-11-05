@@ -183,6 +183,9 @@ function UnitFrameMixin:Update(frame)
   local description = string.format("(%s%s)", level, classification)
 
   self.refs.description.text:SetText(description)
+
+  self.refs.debuffs:Update()
+  self.refs.buffs:Update()
 end
 
 -- Move to settings eventually
@@ -200,32 +203,118 @@ local ControlButtonSpacing = 5
 local ControlPanelHeight =
   ControlButtonSize * 2 + ControlButtonSpacing
 local ControlPanelWidth = ControlButtonSize
+local AuraSize = 15
+local AuraPadding = 2.5
+local MaxAuraCount = 5
 
-local function MakeAuraGrid(unit, name, anchor)
+local BuffGridMixin = {}
+
+function BuffGridMixin:Update()
+  local frame = self
+  local maxCount = self.props.maxCount
+  local index = 1
+  AuraUtil.ForEachAura(
+    self.props.unit,
+    self.props.filter,
+    maxCount,
+    function(...)
+      local name,
+        buffTexture,
+        count,
+        debuffType,
+        duration,
+        expirationTime,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        _,
+        timeMod = ...
+
+      local buffFrame = frame.childFrames[index]
+      --   buffFrame.expirationTime = aura.expirationTime
+      buffFrame.details.hidden = false
+      buffFrame.auraIndex = index
+
+      buffFrame.texture:SetTexture(buffTexture)
+      buffFrame.details.texture.file = buffTexture
+
+      --   local timeText = buffFrame.refs.timeText.details.text
+      --   local stackText = buffFrame.refs.stackText.details.text
+
+      --   if aura.duration > 0 and aura.expirationTime then
+      --     timeText.hidden = false
+      --     buffFrame:SetScript("OnUpdate", UpdateAura)
+      --     UpdateAura(buffFrame)
+      --   else
+      --     timeText.hidden = true
+      --   end
+
+      --   stackText.hidden = not aura.count or aura.count == 0
+      --   stackText.text = aura.count or ""
+
+      --   buffFrame.refs.timeText:UpdateStyles()
+      --   buffFrame.refs.stackText:UpdateStyles()
+      buffFrame:UpdateStyles()
+
+      index = index + 1
+      return index > maxCount
+    end
+  )
+
+  -- hide remaining frames
+  for i = index, maxCount do
+    frame.childFrames[i].details.hidden = true
+    frame.childFrames[i]:UpdateStyles()
+    frame.childFrames[i]:SetScript("OnUpdate", nil)
+  end
+end
+
+local function MakeAuraGrid(unit, name, anchor, filter, maxCount)
   local children = {}
-  for i = 1, 6 do
+  for i = 1, maxCount do
     table.insert(
       children,
       {
         name = "Buff" .. i,
-        backgroundColor = {g = 1}
+        -- backgroundColor = {g = 1},
+        hidden = true,
+        texture = {}
       }
     )
   end
 
   return {
     name = name,
+    ref = string.lower(name),
+    mixin = BuffGridMixin,
+    props = {
+      unit = unit,
+      filter = filter,
+      maxCount = maxCount
+    },
     height = PandaUICore:val(10),
     anchor = PandaUICore:anchor(anchor),
     width = PandaUICore:val(RightPanelWidth - 10),
     childLayout = {
       type = "grid",
       rows = 1,
-      cellWidth = 10,
-      cellHeight = 10,
-      cellPadding = 5
+      cellWidth = AuraSize,
+      cellHeight = AuraSize,
+      cellPadding = 2.5
     },
-    children = children
+    children = children,
+    unit = {
+      name = unit,
+      events = {
+        UNIT_AURA = function(frame, unit)
+          frame:Update()
+        end
+      }
+    }
   }
 end
 
@@ -307,7 +396,15 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             name = "Bottom",
             height = PandaUICore:val(TopPanelHeight),
             -- backgroundColor = {b = 1},
-            children = {MakeAuraGrid(unit, "Debuffs", "BOTTOMLEFT")}
+            children = {
+              MakeAuraGrid(
+                unit,
+                "Debuffs",
+                "BOTTOMLEFT",
+                "HARMFUL RAID",
+                MaxAuraCount
+              )
+            }
           },
           {
             name = "Middle",
@@ -374,7 +471,15 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
             name = "Top",
             height = PandaUICore:val(BottomPanelHeight),
             -- backgroundColor = {b = 1}
-            children = {MakeAuraGrid(unit, "Buffs", "TOPLEFT")}
+            children = {
+              MakeAuraGrid(
+                unit,
+                "Buffs",
+                "TOPLEFT",
+                "HELPFUL RAID",
+                MaxAuraCount
+              )
+            }
           }
         }
       }
@@ -392,8 +497,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         UNIT_SPELLCAST_CHANNEL_START = "InitChannel",
         UNIT_SPELLCAST_CHANNEL_UPDATE = "InitChannel",
         UNIT_SPELLCAST_CHANNEL_STOP = "EndCast",
-        UNIT_LEVEL = "Update",
-        UNIT_AURA = "Update"
+        UNIT_LEVEL = "Update"
       }
     },
     events = {},
