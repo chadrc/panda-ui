@@ -147,20 +147,24 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
       level = level .. " "
     end
 
-    local description = string.format("(%s%s) %s", level, classification, info.name or "")
-
-    -- Compare size to frame size
-    if string.len(description) > 10 then
-      description = string.sub(description, 0, 14) .. "..."
-    end
+    local description = string.format("(%s%s)", level, classification)
 
     frame.refs.description.text:SetText(description)
   end
 
+  local LeftPanelWidth = 30
+  local RightPanelWidth = 80
+  local TopPanelHeight = 15
+  local BottomPanelHeight = TopPanelHeight
+  local MiddlePanelHeight = 40
+  local StatusPadding = 10
+  local TotalWidth = LeftPanelWidth + RightPanelWidth
+  local TotalHeight = BottomPanelHeight + TopPanelHeight + MiddlePanelHeight
+
   return {
     name = "UnitFrame",
-    height = PandaUICore:val(50 + 15 * 2),
-    width = PandaUICore:val(30 + 150),
+    height = PandaUICore:val(TotalHeight),
+    width = PandaUICore:val(TotalWidth),
     childLayout = {
       type = "align",
       direction = "horizontal"
@@ -168,11 +172,11 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
     children = {
       {
         name = "Left",
-        width = PandaUICore:val(30),
+        width = PandaUICore:val(LeftPanelWidth),
         backgroundColor = {r = 1}
       },
       {
-        width = PandaUICore:val(150),
+        width = PandaUICore:val(RightPanelWidth),
         childLayout = {
           type = "align",
           direction = "vertical"
@@ -180,13 +184,13 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
         children = {
           {
             name = "Top",
-            height = PandaUICore:val(15),
+            height = PandaUICore:val(TopPanelHeight),
             backgroundColor = {b = 1}
           },
           {
             name = "Middle",
             backgroundColor = DefaultBackgroundColor,
-            height = PandaUICore:val(50),
+            height = PandaUICore:val(MiddlePanelHeight),
             children = {
               PandaUICore:StatusBar(
                 {
@@ -199,8 +203,8 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
                 name = "Status",
                 ref = "unitStatus",
                 childLayout = {direction = "vertical"},
-                height = PandaUICore:val(40),
-                width = PandaUICore:val(140),
+                height = PandaUICore:val(MiddlePanelHeight - StatusPadding),
+                width = PandaUICore:val(RightPanelWidth - StatusPadding),
                 anchor = PandaUICore:anchor("CENTER"),
                 children = {
                   PandaUICore:Merge(
@@ -257,7 +261,7 @@ function PandaUIUnits:UnitFrame(unit, dropDownMenu)
           },
           {
             name = "Bottom",
-            height = PandaUICore:val(15),
+            height = PandaUICore:val(BottomPanelHeight),
             backgroundColor = {b = 1}
           }
         }
