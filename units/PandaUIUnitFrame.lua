@@ -188,6 +188,33 @@ function UnitFrameMixin:Update(frame)
   self.refs.buffs:Update()
 end
 
+function UnitFrameMixin:SetActions(actions)
+  local button = self.refs.unitStatus.actionButton
+  for _, mods in pairs(
+    {
+      "none",
+      "alt",
+      "ctrl",
+      "shift"
+    }
+  ) do
+    for i = 1, 3 do
+      local attr = string.format("spell%s", i)
+      if mods ~= "none" then
+        attr = mods .. "-" .. attr
+      end
+
+      local spell =
+        PandaUIUnits:GetAction(actions, GetSpecialization(), mods, i)
+
+      button:SetAttribute(attr, spell)
+      print(attr, " = ", spell)
+    end
+  end
+  button:SetAttribute("*type*", "spell")
+  button:SetAttribute("*unit*", self.props.unit)
+end
+
 -- Move to settings eventually
 local LeftPanelWidth = 25
 local RightPanelWidth = 85
@@ -267,9 +294,6 @@ function PandaUIUnits:UnitFrame(
                   button:RegisterForClicks("AnyUp")
                   button:SetPoint("CENTER")
                   SecureUnitButton_OnLoad(button, unit, dropDownMenu)
-                  -- button:SetAttribute("*type1", "target");
-                  -- button:SetAttribute("shift-type2", "target");
-                  -- button:SetAttribute("unit", unit);
                 end
               }
             }
@@ -344,7 +368,21 @@ function PandaUIUnits:UnitFrame(
                   OnLeave = function(frame)
                     GameTooltip:Hide()
                   end
-                }
+                },
+                init = function(frame)
+                  local button =
+                    CreateFrame(
+                    "Button",
+                    frame:GetName() .. "UnitButton",
+                    frame,
+                    "SecureUnitButtonTemplate"
+                  )
+                  button:SetSize(frame:GetWidth(), frame:GetHeight())
+                  button:RegisterForClicks("AnyUp")
+                  button:SetPoint("CENTER")
+
+                  frame.actionButton = button
+                end
               },
               {
                 name = "Description",
@@ -428,7 +466,7 @@ local function SetMovable(details, default, vars, saveVar)
   end
 end
 
-function PandaUIUnits:TargetFrame(vars)
+function PandaUIUnits:TargetFrame(vars, charVars)
   local dropdown = TargetFrameDropDown
   local menuFunc = TargetFrameDropDown_Initialize
   UIDropDownMenu_SetInitializeFunction(dropdown, menuFunc)
@@ -498,13 +536,12 @@ function PandaUIUnits:TargetFrame(vars)
   return details
 end
 
-function PandaUIUnits:PlayerFrame(vars)
+function PandaUIUnits:PlayerFrame(vars, charVars)
   local menuFunc = function()
     ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor", 0, 0)
   end
   local details =
     self:UnitFrame("player", menuFunc, "HELPFUL RAID", "HARMFUL RAID")
-  details.anchor = point
   SetMovable(
     details,
     {
