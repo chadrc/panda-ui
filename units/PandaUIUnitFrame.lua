@@ -208,7 +208,6 @@ function UnitFrameMixin:SetActions(actions)
         PandaUIUnits:GetAction(actions, GetSpecialization(), mods, i)
 
       button:SetAttribute(attr, spell)
-      print(attr, " = ", spell)
     end
   end
   button:SetAttribute("*type*", "spell")
