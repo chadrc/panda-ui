@@ -37,50 +37,7 @@ local BarDetails = {
   }
 }
 
-local ActionButtonMixin = {}
-
-function ActionButtonMixin:Setup()
-  local button =
-    CreateFrame(
-    "Button",
-    self:GetName() .. "Button",
-    self,
-    "SecureActionButtonTemplate"
-  )
-  button:RegisterForClicks("AnyUp")
-  button:SetSize(self:GetWidth(), self:GetHeight())
-  button:SetPoint("CENTER")
-
-  self.actionButton = button
-
-  button:SetAttribute("*type*", "action")
-
-  for _, details in ipairs(BarDetails) do
-    local attr = "action*"
-    if details.mods ~= "" then
-      attr = details.mods .. "-" .. attr
-    end
-    local offset = self.props.index + details.offset
-    -- print(attr, " - ", offset)
-    button:SetAttribute(attr, offset)
-  end
-
-  button:SetScript(
-    "OnEnter",
-    function(frame)
-      -- GameTooltip_SetDefaultAnchor(GameTooltip, frame);
-      GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT")
-      GameTooltip:SetAction(frame:GetParent().actionIndex)
-      GameTooltip:Show()
-    end
-  )
-  button:SetScript(
-    "OnLeave",
-    function(frame)
-      GameTooltip:Hide()
-    end
-  )
-end
+PandaUIPlayer.ActionBarDetails = BarDetails
 
 local ActionGridMixin = {}
 
@@ -204,28 +161,7 @@ end
 function PandaUIPlayer:Actions()
   local buttons = {}
   for i = 1, 12 do
-    table.insert(
-      buttons,
-      {
-        name = "ActionButton" .. i,
-        mixin = ActionButtonMixin,
-        props = {
-          index = i
-        },
-        -- backgroundColor = {r = 0, g = 0, b = 1},
-        children = {
-          {name = "Icon", ref = "icon", texture = {}},
-          {
-            name = "BindingText",
-            text = {
-              font = "GameFontNormal",
-              anchor = PandaUICore:anchor("BOTTOM")
-            }
-          }
-        },
-        init = "Setup"
-      }
-    )
+    table.insert(buttons, PandaUIPlayer:ActionButton(i))
   end
 
   return {

@@ -7,6 +7,7 @@
     <Script file="player/PandaUIPlayerHealth.lua"/>
     <Script file="player/PandaUIPlayerPower.lua"/>
     <Script file="player/PandaUIPlayerBuffs.lua"/>
+    <Script file="player/PandaUIPlayerActionButton.lua"/>
     <Script file="player/PandaUIPlayerActions.lua"/>
     <Script file="player/PandaUIPlayerInit.lua"/>
 </Ui>
