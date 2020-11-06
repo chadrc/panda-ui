@@ -359,16 +359,6 @@ function PandaUIUnits:UnitFrame(
                     }
                   )
                 },
-                scripts = {
-                  OnEnter = function(frame)
-                    GameTooltip:SetOwner(frame, "ANCHOR_BOTTOMRIGHT")
-                    GameTooltip:SetUnit(unit, true)
-                    GameTooltip:Show()
-                  end,
-                  OnLeave = function(frame)
-                    GameTooltip:Hide()
-                  end
-                },
                 init = function(frame)
                   local button =
                     CreateFrame(
@@ -380,6 +370,24 @@ function PandaUIUnits:UnitFrame(
                   button:SetSize(frame:GetWidth(), frame:GetHeight())
                   button:RegisterForClicks("AnyUp")
                   button:SetPoint("CENTER")
+
+                  button:SetScript(
+                    "OnEnter",
+                    function(frame)
+                      GameTooltip:SetOwner(
+                        frame,
+                        "ANCHOR_BOTTOMRIGHT"
+                      )
+                      GameTooltip:SetUnit(unit, true)
+                      GameTooltip:Show()
+                    end
+                  )
+                  button:SetScript(
+                    "OnLeave",
+                    function(frame)
+                      GameTooltip:Hide()
+                    end
+                  )
 
                   frame.actionButton = button
                 end
