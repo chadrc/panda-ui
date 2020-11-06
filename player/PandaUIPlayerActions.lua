@@ -1,5 +1,5 @@
-local ButtonWidth = 40
-local ButtonHeight = 40
+local ButtonWidth = 35
+local ButtonHeight = ButtonWidth
 local CellPadding = 5
 local Columns = 3
 local GridWidth = ButtonWidth * Columns + CellPadding * (Columns - 1)
@@ -37,6 +37,51 @@ local BarDetails = {
   }
 }
 
+local ActionButtonMixin = {}
+
+function ActionButtonMixin:Setup()
+  local button =
+    CreateFrame(
+    "Button",
+    self:GetName() .. "Button",
+    self,
+    "SecureActionButtonTemplate"
+  )
+  button:RegisterForClicks("AnyUp")
+  button:SetSize(self:GetWidth(), self:GetHeight())
+  button:SetPoint("CENTER")
+
+  self.actionButton = button
+
+  button:SetAttribute("*type*", "action")
+
+  for _, details in ipairs(BarDetails) do
+    local attr = "action*"
+    if details.mods ~= "" then
+      attr = details.mods .. "-" .. attr
+    end
+    local offset = self.props.index + details.offset
+    -- print(attr, " - ", offset)
+    button:SetAttribute(attr, offset)
+  end
+
+  button:SetScript(
+    "OnEnter",
+    function(frame)
+      -- GameTooltip_SetDefaultAnchor(GameTooltip, frame);
+      GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT")
+      GameTooltip:SetAction(frame:GetParent().actionIndex)
+      GameTooltip:Show()
+    end
+  )
+  button:SetScript(
+    "OnLeave",
+    function(frame)
+      GameTooltip:Hide()
+    end
+  )
+end
+
 function PandaUIPlayer:Actions()
   local buttons = {}
   for i = 1, 12 do
@@ -44,6 +89,10 @@ function PandaUIPlayer:Actions()
       buttons,
       {
         name = "ActionButton" .. i,
+        mixin = ActionButtonMixin,
+        props = {
+          index = i
+        },
         -- backgroundColor = {r = 0, g = 0, b = 1},
         children = {
           {name = "Icon", ref = "icon", texture = {}},
@@ -55,48 +104,7 @@ function PandaUIPlayer:Actions()
             }
           }
         },
-        init = function(frame)
-          local button =
-            CreateFrame(
-            "Button",
-            frame:GetName() .. "Button",
-            frame,
-            "SecureActionButtonTemplate"
-          )
-          button:RegisterForClicks("AnyUp")
-          button:SetSize(frame:GetWidth(), frame:GetHeight())
-          button:SetPoint("CENTER")
-
-          frame.actionButton = button
-
-          button:SetAttribute("*type*", "action")
-
-          for _, details in ipairs(BarDetails) do
-            local attr = "action*"
-            if details.mods ~= "" then
-              attr = details.mods .. "-" .. attr
-            end
-            local offset = i + details.offset
-            -- print(attr, " - ", offset)
-            button:SetAttribute(attr, offset)
-          end
-
-          button:SetScript(
-            "OnEnter",
-            function(frame)
-              -- GameTooltip_SetDefaultAnchor(GameTooltip, frame);
-              GameTooltip:SetOwner(frame, "ANCHOR_TOPLEFT")
-              GameTooltip:SetAction(frame:GetParent().actionIndex)
-              GameTooltip:Show()
-            end
-          )
-          button:SetScript(
-            "OnLeave",
-            function(frame)
-              GameTooltip:Hide()
-            end
-          )
-        end
+        init = "Setup"
       }
     )
   end

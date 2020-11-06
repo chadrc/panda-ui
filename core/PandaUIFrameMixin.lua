@@ -14,7 +14,11 @@ end
 
 function FrameMixin:Init()
   if self.details.init then
-    self.details.init(self)
+    if type(self.details.init) == "string" then
+      self[self.details.init](self)
+    else
+      self.details.init(self)
+    end
   end
   for _, childFrame in pairs(self.childFrames) do
     childFrame:Init()
