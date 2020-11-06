@@ -231,7 +231,6 @@ function PandaUIPlayer:Actions()
             end
             local modStr = table.concat(downMods, "-")
 
-            PandaUICore:Print(frame.mods)
             for i, details in ipairs(BarDetails) do
               if modStr == details.mods then
                 frame.bar = i
