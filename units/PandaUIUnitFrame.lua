@@ -496,7 +496,6 @@ function PandaUIUnits:TargetFrame(vars, charVars)
         frame:Show()
       end
 
-      print("target", info.isFriend, info.isEnemy)
       if info.isFriend then
         frame.backgroundColor = {r = 0, g = .5, b = 0, a = .4}
       elseif info.isEnemy then
