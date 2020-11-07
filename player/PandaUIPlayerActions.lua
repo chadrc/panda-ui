@@ -65,21 +65,7 @@ end
 function ActionGridMixin:UpdateActionButtons()
   local indexOffset = self:GetActionOffset()
   for i, childFrame in ipairs(self.childFrames) do
-    local actionIndex = i + indexOffset
-    local usable = IsUsableAction(actionIndex)
-    local hasTarget = UnitExists("target")
-
-    local valid = IsActionInRange(actionIndex)
-    local checksRange = (valid ~= nil)
-    local inRange = checksRange and valid
-
-    if usable and (not checksRange or inRange) or not hasTarget then
-      childFrame.refs.icon.details.alpha = 1.0
-    else
-      childFrame.refs.icon.details.alpha = .25
-    end
-
-    childFrame.refs.icon:UpdateStyles()
+    childFrame:Update(self:GetActionOffset())
   end
 end
 
@@ -104,7 +90,7 @@ function ActionGridMixin:CheckRangeChecker()
     self:SetScript(
       "OnUpdate",
       function(frame)
-        UpdateActionButtons(frame)
+        self:UpdateActionButtons(frame)
       end
     )
   elseif not UnitExists("target") then
@@ -191,7 +177,9 @@ function PandaUIPlayer:Actions()
           ACTIONBAR_PAGE_CHANGED = "SetupActionButtons",
           ACTIONBAR_SLOT_CHANGED = "SetupActionButtons",
           PLAYER_TARGET_CHANGED = "CheckRangeChecker",
-          MODIFIER_STATE_CHANGED = "UpdateModifiers"
+          MODIFIER_STATE_CHANGED = "UpdateModifiers",
+          ACTIONBAR_UPDATE_STATE = "UpdateActionButtons",
+          ACTIONBAR_UPDATE_COOLDOWN = "UpdateActionButtons"
         }
       }
     }

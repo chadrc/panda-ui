@@ -41,12 +41,12 @@ local framesToHide = {
       return UnitExists("focus")
     end
   },
-  MinimapCluster = {},
+  --   MinimapCluster = {},
   MainMenuBarArtFrame = {},
   MicroButtonAndBagsBar = {},
   MultiBarRight = {},
   MultiBarLeft = {},
-  ObjectiveTrackerFrame = {},
+  --   ObjectiveTrackerFrame = {},
   BuffFrame = {},
   DurabilityFrame = {},
   CastingBarFrame = {},
