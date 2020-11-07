@@ -55,7 +55,7 @@ local DefaultBackgroundColor = {
   b = .5,
   a = PandaUIUnits.BackgroundAlpha
 }
-local DefaultCastColor = {r = .8, g = .8, b = .8, a = .75}
+local DefaultCastColor = {r = .8, g = .8, b = .0, a = .75}
 
 local UnitFrameMixin = {}
 
@@ -143,7 +143,7 @@ function UnitFrameMixin:Setup(frame)
   if not info.exists or info.dead then
     self.casting = false
     self.channeling = false
-    self.refs.unitStatus:SetBackgroundColor(
+    self.refs.unitStats:SetBackgroundColor(
       PandaUICore:FadeBy(
         PandaUIUnits.InactiveColor,
         PandaUIUnits.BackgroundAlpha
@@ -154,7 +154,7 @@ function UnitFrameMixin:Setup(frame)
     self.refs.power:MakeInactive()
   else
     self:SetAlpha(1.0)
-    self.refs.unitStatus:SetBackgroundColor(
+    self.refs.unitStats:SetBackgroundColor(
       self.backgroundColor or DefaultBackgroundColor
     )
     self.refs.health:MakeActive()
@@ -322,6 +322,7 @@ function PandaUIUnits:UnitFrame(
           },
           {
             name = "Middle",
+            ref = "unitStats",
             backgroundColor = DefaultBackgroundColor,
             height = PandaUICore:val(MiddlePanelHeight),
             children = {
@@ -495,6 +496,7 @@ function PandaUIUnits:TargetFrame(vars, charVars)
         frame:Show()
       end
 
+      print("target", info.isFriend, info.isEnemy)
       if info.isFriend then
         frame.backgroundColor = {r = 0, g = .5, b = 0, a = .4}
       elseif info.isEnemy then
