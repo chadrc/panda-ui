@@ -76,12 +76,60 @@ function ActionButtonMixin:UpdateTexts()
   local actionIndex = self.props.index + self.offset
   local actionType, id = GetActionInfo(actionIndex)
 
-  local start, duration, enabled, modRate, name
+  local start,
+    duration,
+    enabled,
+    modRate,
+    name,
+    charges,
+    maxCharges,
+    chargeStart,
+    chargeDuration,
+    chargeModRate
+
   if actionType == "spell" then
     name = GetSpellInfo(id) -- debugging, remove later
     start, duration, enabled, modRate = GetSpellCooldown(id)
+    charges, maxCharges, chargeStart, chargeDuration, chargeModRate =
+      GetSpellCharges(id)
   else
     start, duration, enabled, modRate = GetActionCooldown(actionIndex)
+    charges, maxCharges, chargeStart, chargeDuration, chargeModRate =
+      GetActionCharges(actionIndex)
+  end
+
+  -- pre-emptivly hide both cooldown texts
+  -- showing will resolve below
+  self.refs.bigCooldown.details.hidden = true
+  self.refs.smallCooldown.details.hidden = true
+  local cooldownTextDetails = self.refs.bigCooldown.details
+  local cooldownAlpha = .25
+
+  if maxCharges and maxCharges > 1 then
+    -- check to display charge numbers
+    self.refs.charges.details.hidden = false
+    self.refs.charges.details.text.text = charges
+
+    -- on cooldown if current charges is less than max
+    if charges < maxCharges then
+      start = chargeStart
+      duration = chargeDuration
+
+      -- Use big cooldown text if there are now charges
+      -- else uses small cooldown and charges
+      if charges == 0 then
+        self.refs.charges.details.hidden = true
+        self.refs.smallCooldown.details.hidden = true
+      else
+        cooldownTextDetails = self.refs.smallCooldown.details
+        cooldownAlpha = .75
+      end
+    else
+      self.refs.smallCooldown.details.hidden = true
+    end
+  else
+    self.refs.charges.details.hidden = true
+    self.refs.smallCooldown.details.hidden = true
   end
 
   if start > 0 and duration > 1.5 and enabled == 1 then
@@ -98,12 +146,11 @@ function ActionButtonMixin:UpdateTexts()
       format = "%im"
     end
 
-    self.refs.icon.details.alpha = .25
-    self.refs.bigCooldown.details.text.text =
-      string.format(format, remaining)
-    self.refs.bigCooldown.details.hidden = false
+    self.refs.icon.details.alpha = cooldownAlpha
+    cooldownTextDetails.text.text = string.format(format, remaining)
+    cooldownTextDetails.hidden = false
   else
-    self.refs.bigCooldown.details.hidden = true
+    cooldownTextDetails.hidden = true
 
     -- not on cooldown, unfade if usable
     if usable then
@@ -111,7 +158,9 @@ function ActionButtonMixin:UpdateTexts()
     end
   end
 
+  self.refs.charges:UpdateStyles()
   self.refs.icon:UpdateStyles()
+  self.refs.smallCooldown:UpdateStyles()
   self.refs.bigCooldown:UpdateStyles()
 end
 
