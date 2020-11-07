@@ -9,6 +9,7 @@ function ActionButtonMixin:Setup()
     "SecureActionButtonTemplate"
   )
   button:RegisterForClicks("AnyUp")
+  button:RegisterForDrag("RightButton")
   button:SetSize(self:GetWidth(), self:GetHeight())
   button:SetPoint("CENTER")
 
@@ -41,6 +42,26 @@ function ActionButtonMixin:Setup()
       GameTooltip:Hide()
     end
   )
+
+  button:SetScript(
+    "OnDragStart",
+    function(frame)
+      PickupAction(frame:GetParent():GetActionIndex())
+      frame:GetParent():Update()
+    end
+  )
+
+  button:SetScript(
+    "OnReceiveDrag",
+    function(frame)
+      PlaceAction(frame:GetParent():GetActionIndex())
+      frame:GetParent():Update()
+    end
+  )
+end
+
+function ActionButtonMixin:GetActionIndex()
+  return self.props.index + (self.offset or 0)
 end
 
 function ActionButtonMixin:Update(offset)
