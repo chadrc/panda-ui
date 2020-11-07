@@ -153,24 +153,32 @@ function ActionButtonMixin:UpdateTexts()
     self.refs.smallCooldown.details.hidden = true
   end
 
-  if start > 0 and duration > 1.5 and enabled == 1 then
+  if start > 0 and enabled == 1 then
     -- print(name, ": ", start, duration, enabled, modRate)
-    local endTime = start + duration
-    local remaining = endTime - GetTime()
+    if duration < 1.5 then
+      -- Global cooldown or less, use swipe animation instead of numbers
+      self.refs.swipe:Show()
+      self.refs.swipe:SetCooldown(start, duration, modRate)
+    else
+      self.refs.swipe:Hide()
+      local endTime = start + duration
+      local remaining = endTime - GetTime()
 
-    local format = "%i"
-    if remaining < 10 then
-      format = "%.1f"
-    elseif remaining >= 100 then
-      -- show current minute for longer cooldowns
-      remaining = math.ceil(remaining / 60)
-      format = "%im"
+      local format = "%i"
+      if remaining < 10 then
+        format = "%.1f"
+      elseif remaining >= 100 then
+        -- show current minute for longer cooldowns
+        remaining = math.ceil(remaining / 60)
+        format = "%im"
+      end
+
+      self.refs.icon.details.alpha = cooldownAlpha
+      cooldownTextDetails.text.text = string.format(format, remaining)
+      cooldownTextDetails.hidden = false
     end
-
-    self.refs.icon.details.alpha = cooldownAlpha
-    cooldownTextDetails.text.text = string.format(format, remaining)
-    cooldownTextDetails.hidden = false
   else
+    self.refs.swipe:Hide()
     cooldownTextDetails.hidden = true
 
     -- not on cooldown, unfade if usable
@@ -195,6 +203,13 @@ function PandaUIPlayer:ActionButton(slot)
     -- backgroundColor = {r = 0, g = 0, b = 1},
     children = {
       {name = "Icon", ref = "icon", texture = {}},
+      {
+        type = "Cooldown",
+        name = "CooldownSwipe",
+        ref = "swipe",
+        template = "CooldownFrameTemplate",
+        frameLevel = 10
+      },
       {
         name = "BigCooldown",
         ref = "bigCooldown",
