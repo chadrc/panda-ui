@@ -55,7 +55,7 @@ local DefaultBackgroundColor = {
   b = .5,
   a = PandaUIUnits.BackgroundAlpha
 }
-local DefaultCastColor = {r = .8, g = .8, b = .0, a = .75}
+local DefaultCastColor = {r = .8, g = .8, b = .8, a = .75}
 
 local UnitFrameMixin = {}
 
