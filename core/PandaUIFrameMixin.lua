@@ -80,9 +80,6 @@ function FrameMixin:UpdateStyles()
   local d = self.details
   local p = d.parent
 
-  self:SetBackdrop(
-    {bgFile = "Interface\\Buttons\\WHITE8X8", tile = true}
-  )
   self:SetBackdropColor(0, 0, 0, 0)
 
   if d.backgroundColor then

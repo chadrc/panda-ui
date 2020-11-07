@@ -214,6 +214,10 @@ function PandaUICore:CreateFrame(name, details, children)
   PandaUICore:ApplyFrameMixin(frame)
   PandaUICore:ApplyMixin(frame, d.mixin)
 
+  frame:SetBackdrop(
+    {bgFile = "Interface\\Buttons\\WHITE8X8", tile = true}
+  )
+
   frame.details = d
   frame.refs = {}
   if d.movable then
