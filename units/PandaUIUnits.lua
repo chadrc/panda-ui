@@ -2,7 +2,7 @@ PandaUIUnits = {}
 
 local ClassDefaults = {
   DRUID = {
-    allies = {
+    helpful = {
       base = {
         none = {"Regrowth"}
       },
@@ -22,7 +22,7 @@ local ClassDefaults = {
         }
       }
     },
-    enemies = {
+    harmful = {
       base = {
         none = {"Entangling Roots", "Growl"}
       }
@@ -46,6 +46,10 @@ function PandaUIUnits:Initialize()
       actions = ClassDefaults[UnitClassBase("player")]
     }
   end
+
+  -- For testing
+  PandaUISavedCharacterVariables.UnitFrames.actions =
+    ClassDefaults[UnitClassBase("player")]
 
   local root =
     PandaUICore:CreateFrame(
@@ -75,8 +79,8 @@ function PandaUIUnits:Initialize()
 
   -- control action setting at top level to be consistent about update behavior
   local actions = PandaUISavedCharacterVariables.UnitFrames.actions
-  root.refs.targetFrame:SetActions(actions.enemies)
-  root.refs.playerFrame:SetActions(actions.allies)
+  root.refs.targetFrame:SetActions(actions)
+  root.refs.playerFrame:SetActions(actions)
 end
 
 function PandaUIUnits:GetAction(actions, spec, mods, button)

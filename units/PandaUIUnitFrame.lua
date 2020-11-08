@@ -198,20 +198,30 @@ function UnitFrameMixin:SetActions(actions)
       "shift"
     }
   ) do
+    button:SetAttribute("*unit*", self.props.unit)
     for i = 1, 3 do
-      local attr = string.format("spell%s", i)
+      button:SetAttribute(
+        string.format("*helpbutton%s", i),
+        string.format("heal%s", i)
+      )
+      button:SetAttribute(string.format("*type-heal%s", i), "spell")
+      local attr = string.format("spell-heal%s", i)
       if mods ~= "none" then
         attr = mods .. "-" .. attr
       end
 
       local spell =
-        PandaUIUnits:GetAction(actions, GetSpecialization(), mods, i)
+        PandaUIUnits:GetAction(
+        actions.helpful,
+        GetSpecialization(),
+        mods,
+        i
+      )
 
+      print(attr, "=", spell)
       button:SetAttribute(attr, spell)
     end
   end
-  button:SetAttribute("*type*", "spell")
-  button:SetAttribute("*unit*", self.props.unit)
 end
 
 -- Move to settings eventually
