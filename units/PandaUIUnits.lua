@@ -97,3 +97,33 @@ function PandaUIUnits:GetAction(actions, spec, mods, button)
 
   return action or ""
 end
+
+function SetMovable(details, default, vars, saveVar)
+  local point = vars[saveVar] or default
+  details.anchor =
+    PandaUICore:anchor(
+    point.point,
+    point.relativePoint,
+    point.xOfs,
+    point.yOfs
+  )
+  details.movable = true
+  details.scripts.OnMouseDown = function(frame)
+    frame:StartMoving()
+  end
+  details.scripts.OnMouseUp = function(frame)
+    frame:StopMovingOrSizing()
+    local point, relativeTo, relativePoint, xOfs, yOfs =
+      frame:GetPoint(1)
+    vars[saveVar] = {
+      point = point,
+      relativeTo = relativeTo,
+      relativePoint = relativePoint,
+      xOfs = xOfs,
+      yOfs = yOfs
+    }
+
+    frame.details.anchor =
+      PandaUICore:anchor(point, relativePoint, xOfs, yOfs)
+  end
+end
