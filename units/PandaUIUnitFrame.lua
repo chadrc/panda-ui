@@ -188,6 +188,32 @@ function UnitFrameMixin:Update(frame)
   self.refs.buffs:Update()
 end
 
+local function SetActionAttribute(
+  button,
+  mods,
+  actions,
+  vButton,
+  buttonName,
+  i)
+  button:SetAttribute(
+    string.format("*%s%s", vButton, i),
+    string.format("%s%s", buttonName, i)
+  )
+  button:SetAttribute(
+    string.format("*type-%s%s", buttonName, i),
+    "spell"
+  )
+  local attr = string.format("spell-%s%s", buttonName, i)
+  if mods ~= "none" then
+    attr = mods .. "-" .. attr
+  end
+
+  local spell =
+    PandaUIUnits:GetAction(actions, GetSpecialization(), mods, i)
+
+  button:SetAttribute(attr, spell)
+end
+
 function UnitFrameMixin:SetActions(actions)
   local button = self.refs.unitStatus.actionButton
   for _, mods in pairs(
@@ -200,26 +226,22 @@ function UnitFrameMixin:SetActions(actions)
   ) do
     button:SetAttribute("*unit*", self.props.unit)
     for i = 1, 3 do
-      button:SetAttribute(
-        string.format("*helpbutton%s", i),
-        string.format("heal%s", i)
-      )
-      button:SetAttribute(string.format("*type-heal%s", i), "spell")
-      local attr = string.format("spell-heal%s", i)
-      if mods ~= "none" then
-        attr = mods .. "-" .. attr
-      end
-
-      local spell =
-        PandaUIUnits:GetAction(
-        actions.helpful,
-        GetSpecialization(),
+      SetActionAttribute(
+        button,
         mods,
+        actions.helpful,
+        "helpbutton",
+        "help",
         i
       )
-
-      print(attr, "=", spell)
-      button:SetAttribute(attr, spell)
+      SetActionAttribute(
+        button,
+        mods,
+        actions.harmful,
+        "harmbutton",
+        "harm",
+        i
+      )
     end
   end
 end
