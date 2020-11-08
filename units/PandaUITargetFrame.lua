@@ -22,8 +22,10 @@ function PandaUIUnits:TargetFrame(vars, charVars)
 
       if info.isFriend then
         frame.backgroundColor = {r = 0, g = .5, b = 0, a = .4}
+        frame:UpdateFilters("HELPFUL RAID", "HARMFUL RAID")
       elseif info.isEnemy then
         frame.backgroundColor = {r = .5, g = 0, b = 0, a = .4}
+        frame:UpdateFilters("HELPFUL", "HARMFUL PLAYER")
       else
         -- let frame use its default
         frame.backgroundColor = nil

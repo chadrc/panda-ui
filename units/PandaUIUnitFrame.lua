@@ -246,6 +246,11 @@ function UnitFrameMixin:SetActions(actions)
   end
 end
 
+function UnitFrameMixin:UpdateFilters(buff, debuff)
+  self.refs.buffs:SetFilter(buff)
+  self.refs.debuffs:SetFilter(debugg)
+end
+
 -- Move to settings eventually
 local LeftPanelWidth = 25
 local RightPanelWidth = 85
@@ -272,7 +277,9 @@ function PandaUIUnits:UnitFrame(
     name = "UnitFrame",
     mixin = UnitFrameMixin,
     props = {
-      unit = unit
+      unit = unit,
+      buffFilter = buffFilter,
+      debuffFilter = debuffFilter
     },
     height = PandaUICore:val(TotalHeight),
     width = PandaUICore:val(TotalWidth),

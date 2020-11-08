@@ -56,6 +56,10 @@ function BuffGridMixin:Update()
   end
 end
 
+function BuffGridMixin:SetFilter(filter)
+  self.props.filter = filter
+end
+
 function PandaUIUnits:MakeAuraGrid(
   unit,
   name,
