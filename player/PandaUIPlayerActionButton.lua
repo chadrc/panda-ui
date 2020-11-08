@@ -1,5 +1,21 @@
 local ActionButtonMixin = {}
 
+local function FormatCooldownTime(start, duration)
+  local endTime = start + duration
+  local remaining = endTime - GetTime()
+
+  local format = "%i"
+  if remaining < 10 then
+    format = "%.1f"
+  elseif remaining >= 100 then
+    -- show current minute for longer cooldowns
+    remaining = math.ceil(remaining / 60)
+    format = "%im"
+  end
+
+  return string.format(format, remaining)
+end
+
 function ActionButtonMixin:Setup()
   local button =
     CreateFrame(
@@ -121,8 +137,6 @@ function ActionButtonMixin:UpdateTexts()
 
   -- pre-emptivly hide both cooldown texts
   -- showing will resolve below
-  self.refs.bigCooldown.details.hidden = true
-  self.refs.smallCooldown.details.hidden = true
   local cooldownTextDetails = self.refs.bigCooldown.details
   local cooldownAlpha = .25
 
@@ -133,17 +147,16 @@ function ActionButtonMixin:UpdateTexts()
 
     -- on cooldown if current charges is less than max
     if charges < maxCharges then
-      start = chargeStart
-      duration = chargeDuration
-
-      -- Use big cooldown text if there are now charges
+      -- Use big cooldown text if there are no charges
       -- else uses small cooldown and charges
       if charges == 0 then
         self.refs.charges.details.hidden = true
         self.refs.smallCooldown.details.hidden = true
       else
-        cooldownTextDetails = self.refs.smallCooldown.details
         cooldownAlpha = .75
+        self.refs.smallCooldown.details.hidden = false
+        self.refs.smallCooldown.details.text.text =
+          FormatCooldownTime(chargeStart, chargeDuration)
       end
     else
       self.refs.smallCooldown.details.hidden = true
@@ -157,29 +170,23 @@ function ActionButtonMixin:UpdateTexts()
     -- print(name, ": ", start, duration, enabled, modRate)
     if duration < 1.5 then
       -- Global cooldown or less, use swipe animation instead of numbers
-      self.refs.swipe:Show()
+      self.refs.bigCooldown.details.hidden = true
+      self.refs.swipe.details.hidden = false
+      self.refs.swipe.details.alpha = 1.0
+      if not self.usable then
+        self.refs.swipe.details.alpha = cooldownAlpha
+      end
       self.refs.swipe:SetCooldown(start, duration, modRate)
     else
-      self.refs.swipe:Hide()
-      local endTime = start + duration
-      local remaining = endTime - GetTime()
-
-      local format = "%i"
-      if remaining < 10 then
-        format = "%.1f"
-      elseif remaining >= 100 then
-        -- show current minute for longer cooldowns
-        remaining = math.ceil(remaining / 60)
-        format = "%im"
-      end
-
+      self.refs.swipe.details.hidden = true
+      self.refs.bigCooldown.details.hidden = false
       self.refs.icon.details.alpha = cooldownAlpha
-      cooldownTextDetails.text.text = string.format(format, remaining)
-      cooldownTextDetails.hidden = false
+      self.refs.bigCooldown.details.text.text =
+        FormatCooldownTime(start, duration)
     end
   else
-    self.refs.swipe:Hide()
-    cooldownTextDetails.hidden = true
+    self.refs.swipe.details.hidden = true
+    self.refs.bigCooldown.details.hidden = true
 
     -- not on cooldown, unfade if usable
     if usable then
@@ -187,6 +194,7 @@ function ActionButtonMixin:UpdateTexts()
     end
   end
 
+  self.refs.swipe:UpdateStyles()
   self.refs.charges:UpdateStyles()
   self.refs.icon:UpdateStyles()
   self.refs.smallCooldown:UpdateStyles()
