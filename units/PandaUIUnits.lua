@@ -1,5 +1,16 @@
 PandaUIUnits = {}
 
+local function MakeActionDefaults()
+  return {
+    helpful = {
+      base = {}
+    },
+    harmful = {
+      base = {}
+    }
+  }
+end
+
 local ClassDefaults = {
   DRUID = {
     helpful = {
@@ -43,13 +54,14 @@ function PandaUIUnits:Initialize()
       not PandaUISavedCharacterVariables.UnitFrames.actions
    then
     PandaUISavedCharacterVariables.UnitFrames = {
-      actions = ClassDefaults[UnitClassBase("player")]
+      actions = ClassDefaults[UnitClassBase("player")] or
+        MakeActionDefaults()
     }
   end
 
   -- For testing
   PandaUISavedCharacterVariables.UnitFrames.actions =
-    ClassDefaults[UnitClassBase("player")]
+    ClassDefaults[UnitClassBase("player")] or MakeActionDefaults()
 
   local root =
     PandaUICore:CreateFrame(
