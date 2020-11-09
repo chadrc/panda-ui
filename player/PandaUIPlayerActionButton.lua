@@ -25,7 +25,7 @@ function ActionButtonMixin:Setup()
     "SecureActionButtonTemplate"
   )
   button:RegisterForClicks("AnyUp")
-  button:RegisterForDrag("RightButton")
+  button:RegisterForDrag("LeftButton", "RightButton")
   button:SetSize(self:GetWidth(), self:GetHeight())
   button:SetPoint("CENTER")
 
@@ -74,6 +74,19 @@ function ActionButtonMixin:Setup()
       frame:GetParent():Update()
     end
   )
+
+  -- overriding click functionality for drag and drop for now
+  -- need to figure out how to get these two to work together
+  button:SetScript(
+    "OnClick",
+    function(frame, button)
+      local cursorType, id = GetCursorInfo()
+      if cursorType then
+        PlaceAction(frame:GetParent():GetActionIndex())
+        frame:GetParent():Update()
+      end
+    end
+  )
 end
 
 function ActionButtonMixin:GetActionIndex()
@@ -81,7 +94,7 @@ function ActionButtonMixin:GetActionIndex()
 end
 
 function ActionButtonMixin:Update(offset)
-  offset = offset or 0
+  offset = offset or self.offset or 0
   self.offset = offset
   local actionIndex = self.props.index + offset
 
