@@ -1,14 +1,40 @@
 SLASH_PANDAUI1 = "/pandaui"
 
 function PandaUI_OnSlash(msg)
-  if msg == "hide_blizz" then
+  local args = PandaUICore:Split(msg)
+
+  local success = false
+  local arg1 = args[1]
+  local error =
+    string.format("Could not execute command %s", tostring(msg))
+  if arg1 == "hide_blizz" then
     PandaUICore:HideBlizzardUI()
-  elseif msg == "show_blizz" then
+    success = true
+  elseif arg1 == "show_blizz" then
     PandaUICore:ShowBlizzardUI()
-  elseif msg == "toggle" then
+    success = true
+  elseif arg1 == "toggle" then
     PandaUICore:ToggleUI()
-  else
-    print("Unknown PandaUI command: ", msg)
+    success = true
+  end
+
+  for _, module in pairs(PandaUICore.modules) do
+    if module.GetSlashDetails then
+      local slashDetails = module:GetSlashDetails()
+      if arg1 == slashDetails.subCmd then
+        success, error = slashDetails.action(args)
+      end
+    end
+  end
+
+  if not success then
+    print(
+      string.format(
+        "Error: %s",
+        tostring(error) or
+          string.format("Could not execute command %s", msg)
+      )
+    )
   end
 end
 
@@ -32,8 +58,13 @@ function PandaUIMainFrame_OnEvent(self, event, ...)
     end
 
     PandaUICore:Initialize()
+    for _, module in pairs(PandaUICore.modules) do
+      if module.Initialize then
+        module:Initialize()
+      end
+    end
     PandaUIPlayer:Initialize()
-    PandaUIUnits:Initialize()
+    -- PandaUIUnits:Initialize()
 
     PandaUICore:HidePandaUI()
   end

@@ -81,13 +81,16 @@ function PandaUIUnits:Initialize()
           PandaUISavedCharacterVariables.UnitFrames
         ),
         {ref = "playerFrame"}
-      )
+      ),
+      PandaUIUnits:OptionsFrame()
     }
   )
 
   root:UpdateStyles()
   root:UpdateLayout()
   root:Init()
+
+  self.root = root
 
   -- control action setting at top level to be consistent about update behavior
   local actions = PandaUISavedCharacterVariables.UnitFrames.actions
@@ -113,3 +116,28 @@ function PandaUIUnits:GetAction(actions, spec, mods, button)
 
   return action or ""
 end
+
+function PandaUIUnits:ShowOptions()
+  self.root.refs.optionsFrame.details.hidden =
+    not self.root.refs.optionsFrame.details.hidden
+  self.root.refs.optionsFrame:UpdateStyles()
+end
+
+local function SlashAction(args)
+  if args[2] == "options" then
+    PandaUIUnits:ShowOptions()
+  else
+    return false, "Unknown Unit command " .. tostring(args[2])
+  end
+
+  return true, nil
+end
+
+function PandaUIUnits:GetSlashDetails()
+  return {
+    subCmd = "units",
+    action = SlashAction
+  }
+end
+
+PandaUICore:RegisterModule(PandaUIUnits)
