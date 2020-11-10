@@ -64,7 +64,6 @@ function PandaUIMainFrame_OnEvent(self, event, ...)
       end
     end
     PandaUIPlayer:Initialize()
-    -- PandaUIUnits:Initialize()
 
     PandaUICore:HidePandaUI()
   end
