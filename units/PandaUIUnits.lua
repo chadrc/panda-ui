@@ -41,26 +41,26 @@ local ClassDefaults = {
   }
 }
 
-function PandaUIUnits:Initialize()
-  if not PandaUISavedVariables.UnitFrames then
-    PandaUISavedVariables.UnitFrames = {
+function PandaUIUnits:GetName()
+  return "Units"
+end
+
+function PandaUIUnits:Initialize(accountData, characterData)
+  if not accountData.frames then
+    accountData.frames = {
       Target = {},
       Party = {},
       Player = {}
     }
   end
-  if
-    not PandaUISavedCharacterVariables.UnitFrames or
-      not PandaUISavedCharacterVariables.UnitFrames.actions
-   then
-    PandaUISavedCharacterVariables.UnitFrames = {
-      actions = ClassDefaults[UnitClassBase("player")] or
-        MakeActionDefaults()
-    }
+
+  if not characterData.actions then
+    characterData.actions =
+      ClassDefaults[UnitClassBase("player")] or MakeActionDefaults()
   end
 
   -- For testing
-  PandaUISavedCharacterVariables.UnitFrames.actions =
+  characterData.actions =
     ClassDefaults[UnitClassBase("player")] or MakeActionDefaults()
 
   local root =
@@ -69,17 +69,11 @@ function PandaUIUnits:Initialize()
     {},
     {
       PandaUICore:Merge(
-        PandaUIUnits:TargetFrame(
-          PandaUISavedVariables.UnitFrames,
-          PandaUISavedCharacterVariables.UnitFrames
-        ),
+        PandaUIUnits:TargetFrame(accountData.frames.Target),
         {ref = "targetFrame"}
       ),
       PandaUICore:Merge(
-        PandaUIUnits:PlayerFrame(
-          PandaUISavedVariables.UnitFrames,
-          PandaUISavedCharacterVariables.UnitFrames
-        ),
+        PandaUIUnits:PlayerFrame(accountData.frames.Player),
         {ref = "playerFrame"}
       ),
       PandaUIUnits:OptionsFrame()

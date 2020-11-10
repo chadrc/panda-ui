@@ -1,4 +1,4 @@
-function PandaUIUnits:TargetFrame(vars, charVars)
+function PandaUIUnits:TargetFrame(vars)
   local dropdown = TargetFrameDropDown
   local menuFunc = TargetFrameDropDown_Initialize
   UIDropDownMenu_SetInitializeFunction(dropdown, menuFunc)
@@ -63,7 +63,7 @@ function PandaUIUnits:TargetFrame(vars, charVars)
       xOfs = 0,
       yOfs = 200
     },
-    vars.Target,
+    vars,
     "position"
   )
 

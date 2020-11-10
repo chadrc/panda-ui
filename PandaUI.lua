@@ -59,8 +59,23 @@ function PandaUIMainFrame_OnEvent(self, event, ...)
 
     PandaUICore:Initialize()
     for _, module in pairs(PandaUICore.modules) do
+      local accountData = nil
+      local characterData = nil
+      if module.GetName then
+        local name = module:GetName()
+
+        if not PandaUISavedVariables[name] then
+          PandaUISavedVariables[name] = {}
+        end
+        if not PandaUISavedCharacterVariables[name] then
+          PandaUISavedCharacterVariables[name] = {}
+        end
+
+        characterData = PandaUISavedCharacterVariables[name]
+        accountData = PandaUISavedVariables[name]
+      end
       if module.Initialize then
-        module:Initialize()
+        module:Initialize(accountData, characterData)
       end
     end
     PandaUIPlayer:Initialize()

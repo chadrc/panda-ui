@@ -1,4 +1,4 @@
-function PandaUIUnits:PlayerFrame(vars, charVars)
+function PandaUIUnits:PlayerFrame(vars)
   local menuFunc = function()
     ToggleDropDownMenu(1, nil, PlayerFrameDropDown, "cursor", 0, 0)
   end
@@ -13,7 +13,7 @@ function PandaUIUnits:PlayerFrame(vars, charVars)
       xOfs = 0,
       yOfs = -200
     },
-    vars.Player,
+    vars,
     "position"
   )
 
